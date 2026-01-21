@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Secure Subscription — Software Solutions Services</title>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta name="robots" content="noindex,nofollow">
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=DM+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="./style.css">
+  </head>
+  <body class="gjs-t-body body-wrapper">
+    
+    <!-- ========================================
+         HEADER
+    ======================================== -->
+    <header class="header">
+      <div class="header-container">
+        <a href="./index.html" aria-label="Go to homepage" class="brand-link header-full-link">
+          <img src="https://cdn.grapesjs.com/workspaces/cmjq2v7zg2h0t12grf49zoxgp/assets/e84ca1a1-aea7-49b3-90f8-9ba6c8f3ead6__whatsapp-image-2025-12-28-at-16.23.49.jpeg" alt="Software Solutions Services logo" loading="eager" width="20" height="20" class="brand-icon-image"/>
+          <span class="brand-name">Software Solutions Services</span>
+        </a>
+      </div>
+    </header>
+
+    <!-- ========================================
+         MAIN CONTENT
+    ======================================== -->
+    <main class="main-content">
+      <section class="hero-section" style="min-height: 70vh; display: flex; align-items: center;">
+        <div class="hero-background">
+          <div class="hero-blob-1"></div>
+          <div class="hero-blob-2"></div>
+          <div class="hero-blob-3"></div>
+        </div>
+        
+        <div class="hero-container" style="text-align: center; max-width: 700px; margin: 0 auto; padding: 2rem;">
+          
+          <!-- Success Badge -->
+          <div class="gjs-t-border hero-eyebrow" style="display: inline-flex; margin-bottom: 1.5rem;">
+            <img src="https://api.iconify.design/lucide-check-circle.svg?color=%2322c55e" alt="Success" width="20" height="20"/>
+            <span class="hero-eyebrow-text" style="color: #22c55e;">Details saved successfully</span>
+          </div>
+          
+          <h1 class="gjs-t-h1 hero-heading">Secure Subscription</h1>
+          <p class="hero-subheading" style="margin-bottom: 1rem; color: rgba(255,255,255,0.9);">You're almost done</p>
+          
+          <!-- Submission ID Display -->
+          <div id="submissionInfo" class="gjs-t-border" style="padding: 1rem 1.5rem; margin-bottom: 2rem; background-color: rgba(255,255,255,0.05); border-radius: 0.75rem;">
+            <p style="color: rgba(255,255,255,0.7); font-size: 0.875rem; margin-bottom: 0.25rem;">Your Submission ID</p>
+            <p id="submissionIdDisplay" style="color: #ffffff; font-size: 1.25rem; font-weight: 600; font-family: monospace; letter-spacing: 0.05em;">Loading...</p>
+          </div>
+
+          <!-- Confirmation Message -->
+          <div class="gjs-t-border" style="padding: 1.5rem; margin-bottom: 2rem; background-color: rgba(10, 132, 255, 0.08); border-color: rgba(10, 132, 255, 0.3); border-radius: 0.75rem;">
+            <div style="display: flex; align-items: flex-start; gap: 1rem; text-align: left;">
+              <img src="https://api.iconify.design/lucide-shield-check.svg?color=%230a84ff" alt="Secure" width="24" height="24" style="flex-shrink: 0; margin-top: 0.125rem;"/>
+              <div>
+                <p style="color: #ffffff; font-weight: 600; margin-bottom: 0.5rem;">Proceeding to Secure Payment</p>
+                <p style="color: rgba(255,255,255,0.85); font-size: 0.95rem;">Your business details have been saved. Complete your subscription below to start your free month. Payment is processed securely by PayFast.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- ========================================
+               PAYFAST SUBSCRIPTION FORM
+               
+               PayFast subscription form configured for:
+               - Initial amount: R0.00 (first month free)
+               - Recurring amount: R499.99/month
+               - Monthly billing (frequency 3)
+               - Indefinite cycles (until cancelled)
+               - ITN webhook for payment confirmation
+               
+               IMPORTANT: Update merchant_id and merchant_key values
+               before going live. Current values are placeholders.
+          ======================================== -->
+          <div id="payfastFormContainer" class="gjs-t-border" style="padding: 2rem; background-color: rgba(255,255,255,0.03); border-radius: 1rem; margin-bottom: 2rem;">
+            
+            <div style="text-align: center;">
+              <img src="https://api.iconify.design/lucide-credit-card.svg?color=%23ffffff" alt="Payment" width="48" height="48" style="margin-bottom: 1rem; opacity: 0.8;"/>
+              <h3 style="color: #ffffff; font-size: 1.25rem; font-weight: 600; margin-bottom: 0.75rem;">Subscribe Now</h3>
+              <p style="color: rgba(255,255,255,0.7); font-size: 0.95rem; margin-bottom: 1.5rem;">First month free (R0.00), then R499.99/month. Cancel anytime.</p>
+              
+              <!-- PayFast Subscription Form -->
+              <form id="payfastForm" action="https://www.payfast.co.za/eng/process" method="POST">
+                
+                <!-- Merchant Details - UPDATE THESE VALUES -->
+                <input type="hidden" name="merchant_id" value="YOUR_MERCHANT_ID"/>
+                <input type="hidden" name="merchant_key" value="YOUR_MERCHANT_KEY"/>
+                
+                <!-- Transaction Details -->
+                <input type="hidden" name="amount" value="0.00"/>
+                <input type="hidden" name="item_name" value="Landing Page Subscription - First Month Free"/>
+                <input type="hidden" name="item_description" value="Professional landing page design and hosting subscription"/>
+                
+                <!-- Subscription Details -->
+                <input type="hidden" name="subscription_type" value="1"/>
+                <input type="hidden" name="recurring_amount" value="499.99"/>
+                <input type="hidden" name="frequency" value="3"/>
+                <input type="hidden" name="cycles" value="0"/>
+                
+                <!-- Customer Details (populated from localStorage) -->
+                <input type="hidden" name="name_first" id="payfast_name_first" value=""/>
+                <input type="hidden" name="name_last" id="payfast_name_last" value=""/>
+                <input type="hidden" name="email_address" id="payfast_email" value=""/>
+                <input type="hidden" name="cell_number" id="payfast_cell" value=""/>
+                
+                <!-- Custom Fields - submission ID passed here -->
+                <input type="hidden" name="custom_str1" id="payfastSubmissionId" value=""/>
+                <input type="hidden" name="custom_str2" id="payfastBusinessName" value=""/>
+                <input type="hidden" name="custom_str3" id="payfastTimestamp" value=""/>
+                
+                <!-- URLs - UPDATE YOUR_DOMAIN -->
+                <input type="hidden" name="return_url" value="https://YOUR_DOMAIN/thank-you-page.html"/>
+                <input type="hidden" name="cancel_url" value="https://YOUR_DOMAIN/subscribe.html"/>
+                <input type="hidden" name="notify_url" value="https://YOUR_NETLIFY_DOMAIN/.netlify/functions/payfast-itn"/>
+                
+                <!-- Email Confirmation -->
+                <input type="hidden" name="email_confirmation" value="1"/>
+                <input type="hidden" name="confirmation_address" value="YOUR_BUSINESS_EMAIL"/>
+                
+                <!-- Submit Button -->
+                <button type="submit" class="gjs-t-button hero-primary-cta" id="payfastSubmitBtn">
+                  <img src="https://api.iconify.design/lucide-lock.svg?color=%23ffffff" alt="Secure" width="18" height="18" style="margin-right: 0.5rem;"/>
+                  Complete Subscription — R0.00 Today
+                </button>
+                
+              </form>
+              
+              <!-- PayFast Logo/Trust Badge -->
+              <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1);">
+                <p style="color: rgba(255,255,255,0.5); font-size: 0.75rem; margin-bottom: 0.5rem;">Secured by</p>
+                <img src="https://www.payfast.co.za/assets/images/branding/payfast-logo-colour.svg" alt="PayFast" height="24" style="height: 24px; opacity: 0.8;"/>
+              </div>
+              
+            </div>
+          </div>
+
+          <!-- Security & Trust Signals -->
+          <div style="display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap; margin-bottom: 2rem;">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <img src="https://api.iconify.design/lucide-shield-check.svg?color=%23ffffff" alt="Secure" width="18" height="18" style="opacity: 0.7;"/>
+              <span style="color: rgba(255,255,255,0.7); font-size: 0.875rem;">256-bit SSL Encryption</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <img src="https://api.iconify.design/lucide-lock.svg?color=%23ffffff" alt="Protected" width="18" height="18" style="opacity: 0.7;"/>
+              <span style="color: rgba(255,255,255,0.7); font-size: 0.875rem;">Secure PayFast Processing</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <img src="https://api.iconify.design/lucide-x-circle.svg?color=%23ffffff" alt="Cancel" width="18" height="18" style="opacity: 0.7;"/>
+              <span style="color: rgba(255,255,255,0.7); font-size: 0.875rem;">Cancel Anytime</span>
+            </div>
+          </div>
+
+          <!-- Back Link -->
+          <a href="./collect-details.html" style="display: inline-flex; align-items: center; gap: 0.5rem; color: rgba(255,255,255,0.7); font-size: 0.875rem; text-decoration: none;">
+            <img src="https://api.iconify.design/lucide-arrow-left.svg?color=%23ffffff" alt="Back" width="16" height="16" style="opacity: 0.7;"/>
+            <span>Back to edit details</span>
+          </a>
+          
+        </div>
+      </section>
+    </main>
+
+    <!-- ========================================
+         FOOTER
+    ======================================== -->
+    <footer class="footer" style="padding: 2rem 0;">
+      <div class="footer-container" style="max-width: 1200px; margin: 0 auto; padding: 0 2rem; text-align: center;">
+        <p style="color: rgba(255,255,255,0.6); font-size: 0.875rem;">
+          © 2025 Software Solutions Services. All rights reserved.
+          <br/>
+          <a href="./privacy-policy.html" style="color: rgba(255,255,255,0.7); text-decoration: underline;">Privacy Policy</a>
+          &nbsp;·&nbsp;
+          <a href="./terms-of-service.html" style="color: rgba(255,255,255,0.7); text-decoration: underline;">Terms of Service</a>
+        </p>
+      </div>
+    </footer>
+
+    <!-- ========================================
+         JAVASCRIPT
+    ======================================== -->
+    <script>
+      /**
+       * Subscribe Page Script
+       * Reads submission data from localStorage, displays confirmation,
+       * and populates the PayFast form with customer details
+       */
+      (function() {
+        'use strict';
+
+        const STORAGE_KEY = 'sss_submission_data';
+
+        /**
+         * Initialize the subscribe page
+         */
+        function init() {
+          // Try to read submission data from localStorage
+          const storedData = localStorage.getItem(STORAGE_KEY);
+          
+          const submissionIdDisplay = document.getElementById('submissionIdDisplay');
+          const payfastForm = document.getElementById('payfastForm');
+          const payfastSubmitBtn = document.getElementById('payfastSubmitBtn');
+
+          if (storedData) {
+            try {
+              const submission = JSON.parse(storedData);
+              const formData = submission.formData || {};
+              
+              // Display the submission ID
+              if (submission.submissionId) {
+                submissionIdDisplay.textContent = submission.submissionId;
+                
+                // Populate PayFast hidden fields
+                populatePayFastForm(submission.submissionId, formData, submission.timestamp);
+
+                console.log('Submission loaded:', submission.submissionId);
+                console.log('Business Name:', formData.businessName || 'N/A');
+              } else {
+                submissionIdDisplay.textContent = 'ID not found';
+                disableForm();
+              }
+            } catch (e) {
+              console.error('Failed to parse submission data:', e);
+              submissionIdDisplay.textContent = 'Error loading ID';
+              disableForm();
+            }
+          } else {
+            // No submission data found - redirect back to form
+            submissionIdDisplay.textContent = 'No submission found';
+            disableForm();
+            
+            // Show warning message
+            const submissionInfo = document.getElementById('submissionInfo');
+            if (submissionInfo) {
+              submissionInfo.style.borderColor = 'rgba(239, 68, 68, 0.5)';
+              submissionInfo.style.backgroundColor = 'rgba(239, 68, 68, 0.1)';
+              submissionInfo.innerHTML = `
+                <p style="color: #fca5a5; font-size: 0.95rem;">
+                  <strong>No submission found.</strong><br/>
+                  Please fill out the details form first.
+                </p>
+                <a href="./collect-details.html" class="gjs-t-button hero-primary-cta" style="margin-top: 1rem; display: inline-flex;">
+                  Go to Details Form
+                </a>
+              `;
+            }
+          }
+        }
+
+        /**
+         * Populate PayFast form fields from localStorage data
+         */
+        function populatePayFastForm(submissionId, formData, timestamp) {
+          // Custom fields for tracking
+          setValue('payfastSubmissionId', submissionId);
+          setValue('payfastBusinessName', formData.businessName || '');
+          setValue('payfastTimestamp', timestamp || new Date().toISOString());
+          
+          // Customer details - split contact name into first/last
+          const contactName = formData.contactName || '';
+          const nameParts = contactName.trim().split(/\s+/);
+          const firstName = nameParts[0] || '';
+          const lastName = nameParts.slice(1).join(' ') || '';
+          
+          setValue('payfast_name_first', firstName);
+          setValue('payfast_name_last', lastName);
+          setValue('payfast_email', formData.email || '');
+          
+          // Format phone number (remove spaces/dashes for PayFast)
+          const phone = (formData.phone || '').replace(/[\s\-\(\)]/g, '');
+          setValue('payfast_cell', phone);
+          
+          console.log('PayFast form populated with customer details');
+        }
+
+        /**
+         * Set value of a form field by ID
+         */
+        function setValue(id, value) {
+          const el = document.getElementById(id);
+          if (el) {
+            el.value = value;
+          }
+        }
+
+        /**
+         * Disable the form when no valid submission exists
+         */
+        function disableForm() {
+          const payfastSubmitBtn = document.getElementById('payfastSubmitBtn');
+          const payfastForm = document.getElementById('payfastForm');
+          
+          if (payfastSubmitBtn) {
+            payfastSubmitBtn.disabled = true;
+            payfastSubmitBtn.style.opacity = '0.5';
+            payfastSubmitBtn.style.cursor = 'not-allowed';
+            payfastSubmitBtn.innerHTML = `
+              <img src="https://api.iconify.design/lucide-alert-circle.svg?color=%23ffffff" alt="Error" width="18" height="18" style="margin-right: 0.5rem;"/>
+              Complete Details Form First
+            `;
+          }
+          
+          if (payfastForm) {
+            payfastForm.addEventListener('submit', function(e) {
+              e.preventDefault();
+              alert('Please complete the details form before subscribing.');
+              window.location.href = './collect-details.html';
+            });
+          }
+        }
+
+        // Initialize when DOM is ready
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', init);
+        } else {
+          init();
+        }
+      })();
+    </script>
+  </body>
+</html>

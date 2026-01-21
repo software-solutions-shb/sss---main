@@ -1,0 +1,41 @@
+# Netlify Configuration for Software Solutions Services
+# =====================================================
+
+[build]
+  # No build command needed for static site
+  publish = "."
+  
+  # Functions directory
+  functions = "netlify/functions"
+
+[functions]
+  # Node.js version for serverless functions
+  node_bundler = "esbuild"
+
+# Headers for security
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+# PayFast ITN endpoint
+[[redirects]]
+  from = "/api/payfast-itn"
+  to = "/.netlify/functions/payfast-itn"
+  status = 200
+
+# Environment Variables Required (set in Netlify Dashboard):
+# ==========================================================
+# PAYFAST_MERCHANT_ID      - Your PayFast merchant ID
+# PAYFAST_MERCHANT_KEY     - Your PayFast merchant key
+# PAYFAST_PASSPHRASE       - Your PayFast passphrase (if set)
+# GOOGLE_SERVICE_ACCOUNT_EMAIL - Google service account email
+# GOOGLE_PRIVATE_KEY       - Google service account private key (with \n preserved)
+# GOOGLE_SHEET_ID          - Google Sheets document ID
+# EMAIL_API_KEY            - Resend or SendGrid API key
+# EMAIL_SERVICE            - 'resend' or 'sendgrid' (default: resend)
+# NOTIFICATION_EMAIL       - Email to receive notifications
+# FROM_EMAIL               - Verified sender email address
