@@ -13,7 +13,7 @@
  */
 
 const { validatePayFastSignature, validatePayFastRequest } = require('./utils/payfast-validator');
-const { appendToGoogleSheet } = require('./utils/google-sheets');
+const { appendToAirtable } = require('./utils/airtable');
 const { sendNotificationEmail } = require('./utils/email-sender');
 
 // ============================================
@@ -22,9 +22,9 @@ const { sendNotificationEmail } = require('./utils/email-sender');
 // PAYFAST_MERCHANT_ID - PayFast merchant ID
 // PAYFAST_MERCHANT_KEY - PayFast merchant key
 // PAYFAST_PASSPHRASE - PayFast passphrase (if set in PayFast dashboard)
-// GOOGLE_SERVICE_ACCOUNT_EMAIL - Google service account email
-// GOOGLE_PRIVATE_KEY - Google service account private key
-// GOOGLE_SHEET_ID - Target Google Sheet ID
+// AIRTABLE_API_KEY - Airtable Personal Access Token
+// AIRTABLE_BASE_ID - Airtable base ID
+// AIRTABLE_TABLE_NAME - Airtable table name
 // EMAIL_API_KEY - Email service API key (e.g., SendGrid, Resend)
 // NOTIFICATION_EMAIL - Email address to receive notifications
 
@@ -136,13 +136,13 @@ exports.handler = async function(event, context) {
     console.log('Subscriber Data:', JSON.stringify(subscriberData, null, 2));
 
     // ----------------------------------------
-    // Step 7: Append to Google Sheets
+    // Step 7: Append to Airtable
     // ----------------------------------------
     try {
-      await appendToGoogleSheet(subscriberData);
-      console.log('✓ Data appended to Google Sheets');
-    } catch (sheetError) {
-      console.error('ERROR: Failed to append to Google Sheets:', sheetError.message);
+      await appendToAirtable(subscriberData);
+      console.log('✓ Data appended to Airtable');
+    } catch (airtableError) {
+      console.error('ERROR: Failed to append to Airtable:', airtableError.message);
       // Continue processing - don't fail the whole request
     }
 

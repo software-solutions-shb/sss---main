@@ -32,9 +32,9 @@
 # PAYFAST_MERCHANT_ID      - Your PayFast merchant ID
 # PAYFAST_MERCHANT_KEY     - Your PayFast merchant key
 # PAYFAST_PASSPHRASE       - Your PayFast passphrase (if set)
-# GOOGLE_SERVICE_ACCOUNT_EMAIL - Google service account email
-# GOOGLE_PRIVATE_KEY       - Google service account private key (with \n preserved)
-# GOOGLE_SHEET_ID          - Google Sheets document ID
+# AIRTABLE_API_KEY         - Airtable Personal Access Token
+# AIRTABLE_BASE_ID         - Airtable base ID (starts with 'app')
+# AIRTABLE_TABLE_NAME      - Airtable table name (default: subscribers)
 # EMAIL_API_KEY            - Resend or SendGrid API key
 # EMAIL_SERVICE            - 'resend' or 'sendgrid' (default: resend)
 # NOTIFICATION_EMAIL       - Email to receive notifications
