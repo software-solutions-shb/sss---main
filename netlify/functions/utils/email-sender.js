@@ -13,7 +13,7 @@ const https = require('https');
 // ENVIRONMENT VARIABLES REQUIRED:
 // ============================================
 // EMAIL_API_KEY - API key for email service (Resend or SendGrid)
-// EMAIL_SERVICE - 'resend' or 'sendgrid' (default: resend)
+// EMAIL_SERVICE - Must be 'resend' or 'sendgrid' (required, no default)
 // NOTIFICATION_EMAIL - Email address to receive notifications
 // FROM_EMAIL - Sender email address (must be verified with email service)
 
@@ -26,25 +26,38 @@ const https = require('https');
 async function sendNotificationEmail(subscriberData) {
   const apiKey = process.env.EMAIL_API_KEY;
   const notificationEmail = process.env.NOTIFICATION_EMAIL;
-  const fromEmail = process.env.FROM_EMAIL || 'notifications@softwaresolutionsservices.co.za';
-  const emailService = (process.env.EMAIL_SERVICE || 'resend').toLowerCase();
+  const fromEmail = process.env.FROM_EMAIL;
+  const emailService = process.env.EMAIL_SERVICE;
 
   if (!apiKey) {
-    throw new Error('Email API key not configured. Set EMAIL_API_KEY environment variable.');
+    throw new Error('EMAIL_API_KEY environment variable is required but not set.');
   }
 
   if (!notificationEmail) {
-    throw new Error('Notification email not configured. Set NOTIFICATION_EMAIL environment variable.');
+    throw new Error('NOTIFICATION_EMAIL environment variable is required but not set.');
+  }
+
+  if (!fromEmail) {
+    throw new Error('FROM_EMAIL environment variable is required but not set.');
+  }
+
+  if (!emailService) {
+    throw new Error('EMAIL_SERVICE environment variable is required but not set. Use "resend" or "sendgrid".');
+  }
+
+  const normalizedService = emailService.toLowerCase();
+  if (normalizedService !== 'resend' && normalizedService !== 'sendgrid') {
+    throw new Error('EMAIL_SERVICE must be "resend" or "sendgrid".');
   }
 
   // Build email content
   const emailContent = buildEmailContent(subscriberData);
 
   console.log('Sending notification email to:', notificationEmail);
-  console.log('Using email service:', emailService);
+  console.log('Using email service:', normalizedService);
 
   // Send via configured service
-  if (emailService === 'sendgrid') {
+  if (normalizedService === 'sendgrid') {
     return sendViaSendGrid(apiKey, fromEmail, notificationEmail, emailContent);
   } else {
     return sendViaResend(apiKey, fromEmail, notificationEmail, emailContent);
@@ -58,7 +71,7 @@ async function sendNotificationEmail(subscriberData) {
  * @returns {Object} Email subject and body content
  */
 function buildEmailContent(data) {
-  const subject = '🎉 New Subscriber – Software Solutions Services';
+  const subject = '🎉 New Subscriber Notification';
 
   // Plain text version
   const textBody = `

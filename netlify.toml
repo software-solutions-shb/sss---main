@@ -27,15 +27,25 @@
   to = "/.netlify/functions/payfast-itn"
   status = 200
 
-# Environment Variables Required (set in Netlify Dashboard):
-# ==========================================================
-# PAYFAST_MERCHANT_ID      - Your PayFast merchant ID
-# PAYFAST_MERCHANT_KEY     - Your PayFast merchant key
-# PAYFAST_PASSPHRASE       - Your PayFast passphrase (if set)
-# AIRTABLE_API_KEY         - Airtable Personal Access Token
-# AIRTABLE_BASE_ID         - Airtable base ID (starts with 'app')
-# AIRTABLE_TABLE_NAME      - Airtable table name (default: subscribers)
-# EMAIL_API_KEY            - Resend or SendGrid API key
-# EMAIL_SERVICE            - 'resend' or 'sendgrid' (default: resend)
-# NOTIFICATION_EMAIL       - Email to receive notifications
-# FROM_EMAIL               - Verified sender email address
+# =====================================================
+# REQUIRED ENVIRONMENT VARIABLES
+# =====================================================
+# All environment variables must be set in the Netlify Dashboard.
+# The application will throw runtime errors if any are missing.
+# Do NOT set values here - this file must contain no secrets.
+#
+# PayFast Payment Gateway:
+#   PAYFAST_MERCHANT_ID    - PayFast merchant ID (required)
+#   PAYFAST_MERCHANT_KEY   - PayFast merchant key (required)  
+#   PAYFAST_PASSPHRASE     - PayFast passphrase (required, set to "" if not using)
+#
+# Airtable Database:
+#   AIRTABLE_API_KEY       - Airtable Personal Access Token (required)
+#   AIRTABLE_BASE_ID       - Airtable base ID (required)
+#   AIRTABLE_TABLE_NAME    - Airtable table name (required)
+#
+# Email Notifications:
+#   EMAIL_API_KEY          - Email service API key (required)
+#   EMAIL_SERVICE          - Must be "resend" or "sendgrid" (required)
+#   NOTIFICATION_EMAIL     - Recipient for notifications (required)
+#   FROM_EMAIL             - Verified sender address (required)

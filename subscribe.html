@@ -73,8 +73,9 @@
                - Indefinite cycles (until cancelled)
                - ITN webhook for payment confirmation
                
-               IMPORTANT: Update merchant_id and merchant_key values
-               before going live. Current values are placeholders.
+               SECURITY NOTE: All merchant credentials and URLs
+               must be configured server-side or at deployment.
+               No sensitive values should be committed to version control.
           ======================================== -->
           <div id="payfastFormContainer" class="gjs-t-border" style="padding: 2rem; background-color: rgba(255,255,255,0.03); border-radius: 1rem; margin-bottom: 2rem;">
             
@@ -86,9 +87,13 @@
               <!-- PayFast Subscription Form -->
               <form id="payfastForm" action="https://www.payfast.co.za/eng/process" method="POST">
                 
-                <!-- Merchant Details - UPDATE THESE VALUES -->
-                <input type="hidden" name="merchant_id" value="YOUR_MERCHANT_ID"/>
-                <input type="hidden" name="merchant_key" value="YOUR_MERCHANT_KEY"/>
+                <!-- 
+                  IMPORTANT: Merchant credentials must be injected server-side 
+                  or via a secure configuration mechanism before going live.
+                  Never commit actual credentials to version control.
+                -->
+                <input type="hidden" name="merchant_id" value=""/>
+                <input type="hidden" name="merchant_key" value=""/>
                 
                 <!-- Transaction Details -->
                 <input type="hidden" name="amount" value="0.00"/>
@@ -112,14 +117,17 @@
                 <input type="hidden" name="custom_str2" id="payfastBusinessName" value=""/>
                 <input type="hidden" name="custom_str3" id="payfastTimestamp" value=""/>
                 
-                <!-- URLs - UPDATE YOUR_DOMAIN -->
-                <input type="hidden" name="return_url" value="https://YOUR_DOMAIN/thank-you-page.html"/>
-                <input type="hidden" name="cancel_url" value="https://YOUR_DOMAIN/subscribe.html"/>
-                <input type="hidden" name="notify_url" value="https://YOUR_NETLIFY_DOMAIN/.netlify/functions/payfast-itn"/>
+                <!-- 
+                  URLs - These must be configured for your deployment domain.
+                  Values are populated dynamically or via build-time injection.
+                -->
+                <input type="hidden" name="return_url" value=""/>
+                <input type="hidden" name="cancel_url" value=""/>
+                <input type="hidden" name="notify_url" value=""/>
                 
-                <!-- Email Confirmation -->
+                <!-- Email Confirmation - Configured at deployment -->
                 <input type="hidden" name="email_confirmation" value="1"/>
-                <input type="hidden" name="confirmation_address" value="YOUR_BUSINESS_EMAIL"/>
+                <input type="hidden" name="confirmation_address" value=""/>
                 
                 <!-- Submit Button -->
                 <button type="submit" class="gjs-t-button hero-primary-cta" id="payfastSubmitBtn">
@@ -277,6 +285,13 @@
           const phone = (formData.phone || '').replace(/[\s\-\(\)]/g, '');
           setValue('payfast_cell', phone);
           
+          // Populate URL fields dynamically based on current domain
+          // These are non-sensitive configuration values
+          const baseUrl = window.location.origin;
+          setValueByName('return_url', baseUrl + '/thank-you-page.html');
+          setValueByName('cancel_url', baseUrl + '/subscribe.html');
+          setValueByName('notify_url', baseUrl + '/.netlify/functions/payfast-itn');
+          
           console.log('PayFast form populated with customer details');
         }
 
@@ -285,6 +300,16 @@
          */
         function setValue(id, value) {
           const el = document.getElementById(id);
+          if (el) {
+            el.value = value;
+          }
+        }
+
+        /**
+         * Set value of a form field by name attribute
+         */
+        function setValueByName(name, value) {
+          const el = document.querySelector('input[name="' + name + '"]');
           if (el) {
             el.value = value;
           }

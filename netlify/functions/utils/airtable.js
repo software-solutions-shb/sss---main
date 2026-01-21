@@ -27,14 +27,18 @@ const https = require('https');
 async function appendToAirtable(subscriberData) {
   const apiKey = process.env.AIRTABLE_API_KEY;
   const baseId = process.env.AIRTABLE_BASE_ID;
-  const tableName = process.env.AIRTABLE_TABLE_NAME || 'subscribers';
+  const tableName = process.env.AIRTABLE_TABLE_NAME;
 
   if (!apiKey) {
-    throw new Error('Airtable API key not configured. Set AIRTABLE_API_KEY environment variable.');
+    throw new Error('AIRTABLE_API_KEY environment variable is required but not set.');
   }
 
   if (!baseId) {
-    throw new Error('Airtable Base ID not configured. Set AIRTABLE_BASE_ID environment variable.');
+    throw new Error('AIRTABLE_BASE_ID environment variable is required but not set.');
+  }
+
+  if (!tableName) {
+    throw new Error('AIRTABLE_TABLE_NAME environment variable is required but not set.');
   }
 
   console.log('Appending data to Airtable...');
@@ -160,10 +164,16 @@ function mapToAirtableFields(data) {
 async function findBySubmissionId(submissionId) {
   const apiKey = process.env.AIRTABLE_API_KEY;
   const baseId = process.env.AIRTABLE_BASE_ID;
-  const tableName = process.env.AIRTABLE_TABLE_NAME || 'subscribers';
+  const tableName = process.env.AIRTABLE_TABLE_NAME;
 
-  if (!apiKey || !baseId) {
-    throw new Error('Airtable credentials not configured.');
+  if (!apiKey) {
+    throw new Error('AIRTABLE_API_KEY environment variable is required but not set.');
+  }
+  if (!baseId) {
+    throw new Error('AIRTABLE_BASE_ID environment variable is required but not set.');
+  }
+  if (!tableName) {
+    throw new Error('AIRTABLE_TABLE_NAME environment variable is required but not set.');
   }
 
   return new Promise((resolve, reject) => {
@@ -222,10 +232,16 @@ async function findBySubmissionId(submissionId) {
 async function updateRecord(recordId, fields) {
   const apiKey = process.env.AIRTABLE_API_KEY;
   const baseId = process.env.AIRTABLE_BASE_ID;
-  const tableName = process.env.AIRTABLE_TABLE_NAME || 'subscribers';
+  const tableName = process.env.AIRTABLE_TABLE_NAME;
 
-  if (!apiKey || !baseId) {
-    throw new Error('Airtable credentials not configured.');
+  if (!apiKey) {
+    throw new Error('AIRTABLE_API_KEY environment variable is required but not set.');
+  }
+  if (!baseId) {
+    throw new Error('AIRTABLE_BASE_ID environment variable is required but not set.');
+  }
+  if (!tableName) {
+    throw new Error('AIRTABLE_TABLE_NAME environment variable is required but not set.');
   }
 
   return new Promise((resolve, reject) => {

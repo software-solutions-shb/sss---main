@@ -74,7 +74,10 @@ exports.handler = async function(event, context) {
     // ----------------------------------------
     // Step 3: Validate PayFast signature
     // ----------------------------------------
-    const passphrase = process.env.PAYFAST_PASSPHRASE || '';
+    const passphrase = process.env.PAYFAST_PASSPHRASE;
+    if (passphrase === undefined) {
+      throw new Error('PAYFAST_PASSPHRASE environment variable is required but not set. Set to empty string if not using passphrase.');
+    }
     const isValidSignature = validatePayFastSignature(itnData, passphrase);
 
     if (!isValidSignature) {
@@ -90,6 +93,9 @@ exports.handler = async function(event, context) {
     // Step 4: Validate the PayFast request
     // ----------------------------------------
     const merchantId = process.env.PAYFAST_MERCHANT_ID;
+    if (!merchantId) {
+      throw new Error('PAYFAST_MERCHANT_ID environment variable is required but not set.');
+    }
     const validationResult = await validatePayFastRequest(itnData, merchantId);
 
     if (!validationResult.valid) {
