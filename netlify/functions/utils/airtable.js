@@ -41,10 +41,6 @@ async function appendToAirtable(subscriberData) {
     throw new Error('AIRTABLE_TABLE_NAME environment variable is required but not set.');
   }
 
-  console.log('Appending data to Airtable...');
-  console.log('Base ID:', baseId);
-  console.log('Table:', tableName);
-
   // Map subscriber data to Airtable fields
   const fields = mapToAirtableFields(subscriberData);
 
@@ -80,26 +76,20 @@ async function appendToAirtable(subscriberData) {
       });
 
       res.on('end', () => {
-        console.log('Airtable API response status:', res.statusCode);
-        
         if (res.statusCode >= 200 && res.statusCode < 300) {
           try {
             const parsed = JSON.parse(responseData);
-            console.log('✓ Successfully appended record to Airtable');
-            console.log('Record ID:', parsed.records?.[0]?.id);
             resolve(parsed);
           } catch (e) {
             resolve({ success: true, statusCode: res.statusCode });
           }
         } else {
-          console.error('Airtable API error:', responseData);
-          reject(new Error(`Airtable API error: ${res.statusCode} - ${responseData}`));
+          reject(new Error(`Airtable API error: ${res.statusCode}`));
         }
       });
     });
 
     req.on('error', (error) => {
-      console.error('Airtable request error:', error);
       reject(error);
     });
 

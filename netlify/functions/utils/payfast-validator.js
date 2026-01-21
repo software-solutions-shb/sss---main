@@ -60,12 +60,6 @@ function validatePayFastSignature(data, passphrase = '') {
   const receivedSignature = (data.signature || '').toLowerCase();
   const isValid = calculatedSignature.toLowerCase() === receivedSignature;
 
-  // Debug logging
-  console.log('Signature Validation:');
-  console.log('- Received signature:', receivedSignature);
-  console.log('- Calculated signature:', calculatedSignature.toLowerCase());
-  console.log('- Valid:', isValid);
-
   return isValid;
 }
 
@@ -107,7 +101,6 @@ async function validatePayFastRequest(data, merchantId) {
       };
     }
   } catch (error) {
-    console.warn('PayFast server validation error (continuing):', error.message);
     // Don't fail if server validation has issues - signature validation is primary
   }
 
@@ -153,8 +146,6 @@ function confirmWithPayFast(data) {
       });
 
       res.on('end', () => {
-        console.log('PayFast validation response:', responseData.trim());
-        
         // PayFast returns 'VALID' if the ITN is legitimate
         const isValid = responseData.trim() === 'VALID';
         resolve(isValid);
@@ -162,7 +153,6 @@ function confirmWithPayFast(data) {
     });
 
     req.on('error', (error) => {
-      console.error('PayFast validation request error:', error);
       reject(error);
     });
 
@@ -207,11 +197,6 @@ function verifyPayFastIP(sourceIp) {
 
   const isPayFast = payfastIPs.includes(sourceIp);
   const isTest = testIPs.includes(sourceIp);
-
-  console.log('IP Verification:');
-  console.log('- Source IP:', sourceIp);
-  console.log('- Is PayFast IP:', isPayFast);
-  console.log('- Is Test IP:', isTest);
 
   return isPayFast || isTest;
 }

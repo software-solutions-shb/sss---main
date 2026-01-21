@@ -46,6 +46,6 @@
 #
 # Email Notifications:
 #   EMAIL_API_KEY          - Email service API key (required)
-#   EMAIL_SERVICE          - Must be "resend" or "sendgrid" (required)
+#   EMAIL_SERVICE          - Email provider identifier (required)
 #   NOTIFICATION_EMAIL     - Recipient for notifications (required)
 #   FROM_EMAIL             - Verified sender address (required)

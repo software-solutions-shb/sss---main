@@ -25,7 +25,8 @@ const { sendNotificationEmail } = require('./utils/email-sender');
 // AIRTABLE_API_KEY - Airtable Personal Access Token
 // AIRTABLE_BASE_ID - Airtable base ID
 // AIRTABLE_TABLE_NAME - Airtable table name
-// EMAIL_API_KEY - Email service API key (e.g., SendGrid, Resend)
+// EMAIL_API_KEY - Email service API key
+// EMAIL_SERVICE - Email provider identifier
 // NOTIFICATION_EMAIL - Email address to receive notifications
 
 /**
