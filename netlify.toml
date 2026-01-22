@@ -27,6 +27,12 @@
   to = "/.netlify/functions/payfast-itn"
   status = 200
 
+# PayFast payment redirect endpoint
+[[redirects]]
+  from = "/api/payfast-redirect"
+  to = "/.netlify/functions/payfast-redirect"
+  status = 200
+
 # =====================================================
 # REQUIRED ENVIRONMENT VARIABLES
 # =====================================================
@@ -34,17 +40,42 @@
 # The application will throw runtime errors if any are missing.
 # Do NOT set values here - this file must contain no secrets.
 #
-# PayFast Payment Gateway:
-#   PAYFAST_MERCHANT_ID    - PayFast merchant ID (required)
-#   PAYFAST_MERCHANT_KEY   - PayFast merchant key (required)  
-#   PAYFAST_PASSPHRASE     - PayFast passphrase (required, set to "" if not using)
+# -----------------------------------------------------
+# Site Configuration:
+# -----------------------------------------------------
+#   SITE_URL               - Full base URL of the site (required)
+#                            Example: https://your-site.netlify.app
 #
+# -----------------------------------------------------
+# PayFast Payment Gateway:
+# -----------------------------------------------------
+#   PAYFAST_MODE           - Payment environment mode (required)
+#                            Must be exactly "sandbox" or "live"
+#                            Controls which credentials and endpoints are used
+#
+#   For SANDBOX mode (testing):
+#     PAYFAST_SANDBOX_MERCHANT_ID    - Sandbox merchant ID (required when mode is sandbox)
+#     PAYFAST_SANDBOX_MERCHANT_KEY   - Sandbox merchant key (required when mode is sandbox)
+#     PAYFAST_SANDBOX_PASSPHRASE     - Sandbox passphrase (required, use "" if none)
+#
+#   For LIVE mode (production):
+#     PAYFAST_LIVE_MERCHANT_ID       - Live merchant ID (required when mode is live)
+#     PAYFAST_LIVE_MERCHANT_KEY      - Live merchant key (required when mode is live)
+#     PAYFAST_LIVE_PASSPHRASE        - Live passphrase (required, use "" if none)
+#
+#   NOTE: Only the credentials for the active mode need to be set.
+#         Unused mode credentials can remain unset.
+#
+# -----------------------------------------------------
 # Airtable Database:
+# -----------------------------------------------------
 #   AIRTABLE_API_KEY       - Airtable Personal Access Token (required)
 #   AIRTABLE_BASE_ID       - Airtable base ID (required)
 #   AIRTABLE_TABLE_NAME    - Airtable table name (required)
 #
+# -----------------------------------------------------
 # Email Notifications:
+# -----------------------------------------------------
 #   EMAIL_API_KEY          - Email service API key (required)
 #   EMAIL_SERVICE          - Email provider identifier (required)
 #   NOTIFICATION_EMAIL     - Recipient for notifications (required)

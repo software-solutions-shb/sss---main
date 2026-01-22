@@ -4,16 +4,14 @@
  * Handles validation of PayFast ITN (Instant Transaction Notification) requests
  * including signature verification and server confirmation.
  * 
+ * Validation URL is determined dynamically based on PAYFAST_MODE environment variable.
+ * 
  * @module netlify/functions/utils/payfast-validator
  */
 
 const crypto = require('crypto');
 const https = require('https');
-
-// PayFast validation endpoint
-const PAYFAST_VALIDATE_URL = 'https://www.payfast.co.za/eng/query/validate';
-// Use sandbox URL for testing:
-// const PAYFAST_VALIDATE_URL = 'https://sandbox.payfast.co.za/eng/query/validate';
+const { getPayFastValidateUrl, getPayFastHostname } = require('./payfast-config');
 
 /**
  * Validate PayFast ITN signature
@@ -112,6 +110,7 @@ async function validatePayFastRequest(data, merchantId) {
  * 
  * Sends the ITN data back to PayFast to confirm it's legitimate.
  * This is an additional security measure.
+ * Uses dynamically constructed URL based on PAYFAST_MODE.
  * 
  * @param {Object} data - The ITN data to validate
  * @returns {Promise<boolean>} True if PayFast confirms the ITN
@@ -124,8 +123,9 @@ function confirmWithPayFast(data) {
       .map(key => `${key}=${encodeURIComponent(data[key]).replace(/%20/g, '+')}`)
       .join('&');
 
-    // Parse the URL for request options
-    const url = new URL(PAYFAST_VALIDATE_URL);
+    // Get URL dynamically based on PAYFAST_MODE
+    const validateUrl = getPayFastValidateUrl();
+    const url = new URL(validateUrl);
     
     const options = {
       hostname: url.hostname,

@@ -6,8 +6,10 @@
  * 1. Validating the PayFast signature
  * 2. Confirming payment status is COMPLETE
  * 3. Extracting the submission ID from custom fields
- * 4. Appending subscriber data to Google Sheets
+ * 4. Appending subscriber data to Airtable
  * 5. Sending email notification to business owner
+ * 
+ * Configuration is derived dynamically from PAYFAST_MODE environment variable.
  * 
  * @module netlify/functions/payfast-itn
  */
@@ -15,19 +17,26 @@
 const { validatePayFastSignature, validatePayFastRequest } = require('./utils/payfast-validator');
 const { appendToAirtable } = require('./utils/airtable');
 const { sendNotificationEmail } = require('./utils/email-sender');
+const { getPayFastCredentials, getPayFastModeLabel, logConfigStatus } = require('./utils/payfast-config');
 
 // ============================================
 // ENVIRONMENT VARIABLES (set in Netlify dashboard)
 // ============================================
-// PAYFAST_MERCHANT_ID - PayFast merchant ID
-// PAYFAST_MERCHANT_KEY - PayFast merchant key
-// PAYFAST_PASSPHRASE - PayFast passphrase (if set in PayFast dashboard)
-// AIRTABLE_API_KEY - Airtable Personal Access Token
-// AIRTABLE_BASE_ID - Airtable base ID
-// AIRTABLE_TABLE_NAME - Airtable table name
-// EMAIL_API_KEY - Email service API key
-// EMAIL_SERVICE - Email provider identifier
-// NOTIFICATION_EMAIL - Email address to receive notifications
+// PAYFAST_MODE - Must be "sandbox" or "live"
+// 
+// For sandbox mode:
+//   PAYFAST_SANDBOX_MERCHANT_ID
+//   PAYFAST_SANDBOX_MERCHANT_KEY
+//   PAYFAST_SANDBOX_PASSPHRASE
+// 
+// For live mode:
+//   PAYFAST_LIVE_MERCHANT_ID
+//   PAYFAST_LIVE_MERCHANT_KEY
+//   PAYFAST_LIVE_PASSPHRASE
+// 
+// Other required variables:
+//   AIRTABLE_API_KEY, AIRTABLE_BASE_ID, AIRTABLE_TABLE_NAME
+//   EMAIL_API_KEY, EMAIL_SERVICE, NOTIFICATION_EMAIL, FROM_EMAIL
 
 /**
  * Main handler for PayFast ITN webhook
@@ -54,6 +63,21 @@ exports.handler = async function(event, context) {
 
   try {
     // ----------------------------------------
+    // Step 1.5: Load and validate PayFast config
+    // ----------------------------------------
+    let payfastConfig;
+    try {
+      payfastConfig = getPayFastCredentials();
+      console.log('PayFast Mode:', payfastConfig.modeLabel);
+    } catch (configError) {
+      console.error('ERROR: PayFast configuration failed:', configError.message);
+      return {
+        statusCode: 500,
+        body: JSON.stringify({ error: 'Server configuration error' })
+      };
+    }
+
+    // ----------------------------------------
     // Step 2: Parse the ITN data
     // ----------------------------------------
     let itnData;
@@ -75,11 +99,7 @@ exports.handler = async function(event, context) {
     // ----------------------------------------
     // Step 3: Validate PayFast signature
     // ----------------------------------------
-    const passphrase = process.env.PAYFAST_PASSPHRASE;
-    if (passphrase === undefined) {
-      throw new Error('PAYFAST_PASSPHRASE environment variable is required but not set. Set to empty string if not using passphrase.');
-    }
-    const isValidSignature = validatePayFastSignature(itnData, passphrase);
+    const isValidSignature = validatePayFastSignature(itnData, payfastConfig.passphrase);
 
     if (!isValidSignature) {
       console.log('ERROR: Invalid PayFast signature');
@@ -93,11 +113,7 @@ exports.handler = async function(event, context) {
     // ----------------------------------------
     // Step 4: Validate the PayFast request
     // ----------------------------------------
-    const merchantId = process.env.PAYFAST_MERCHANT_ID;
-    if (!merchantId) {
-      throw new Error('PAYFAST_MERCHANT_ID environment variable is required but not set.');
-    }
-    const validationResult = await validatePayFastRequest(itnData, merchantId);
+    const validationResult = await validatePayFastRequest(itnData, payfastConfig.merchantId);
 
     if (!validationResult.valid) {
       console.log('ERROR: PayFast validation failed:', validationResult.error);

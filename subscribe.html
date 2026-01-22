@@ -73,9 +73,9 @@
                - Indefinite cycles (until cancelled)
                - ITN webhook for payment confirmation
                
-               SECURITY NOTE: All merchant credentials and URLs
-               must be configured server-side or at deployment.
-               No sensitive values should be committed to version control.
+               SECURITY NOTE: All merchant credentials and PayFast URLs
+               are handled server-side via the payfast-redirect function.
+               No sensitive values are exposed to the client.
           ======================================== -->
           <div id="payfastFormContainer" class="gjs-t-border" style="padding: 2rem; background-color: rgba(255,255,255,0.03); border-radius: 1rem; margin-bottom: 2rem;">
             
@@ -84,50 +84,17 @@
               <h3 style="color: #ffffff; font-size: 1.25rem; font-weight: 600; margin-bottom: 0.75rem;">Subscribe Now</h3>
               <p style="color: rgba(255,255,255,0.7); font-size: 0.95rem; margin-bottom: 1.5rem;">First month free (R0.00), then R499.99/month. Cancel anytime.</p>
               
-              <!-- PayFast Subscription Form -->
-              <form id="payfastForm" action="https://www.payfast.co.za/eng/process" method="POST">
+              <!-- PayFast Redirect Form - Posts to server-side handler -->
+              <form id="payfastForm" action="/.netlify/functions/payfast-redirect" method="POST">
                 
-                <!-- 
-                  IMPORTANT: Merchant credentials must be injected server-side 
-                  or via a secure configuration mechanism before going live.
-                  Never commit actual credentials to version control.
-                -->
-                <input type="hidden" name="merchant_id" value=""/>
-                <input type="hidden" name="merchant_key" value=""/>
-                
-                <!-- Transaction Details -->
-                <input type="hidden" name="amount" value="0.00"/>
-                <input type="hidden" name="item_name" value="Landing Page Subscription - First Month Free"/>
-                <input type="hidden" name="item_description" value="Professional landing page design and hosting subscription"/>
-                
-                <!-- Subscription Details -->
-                <input type="hidden" name="subscription_type" value="1"/>
-                <input type="hidden" name="recurring_amount" value="499.99"/>
-                <input type="hidden" name="frequency" value="3"/>
-                <input type="hidden" name="cycles" value="0"/>
-                
-                <!-- Customer Details (populated from localStorage) -->
-                <input type="hidden" name="name_first" id="payfast_name_first" value=""/>
-                <input type="hidden" name="name_last" id="payfast_name_last" value=""/>
-                <input type="hidden" name="email_address" id="payfast_email" value=""/>
-                <input type="hidden" name="cell_number" id="payfast_cell" value=""/>
-                
-                <!-- Custom Fields - submission ID passed here -->
-                <input type="hidden" name="custom_str1" id="payfastSubmissionId" value=""/>
-                <input type="hidden" name="custom_str2" id="payfastBusinessName" value=""/>
-                <input type="hidden" name="custom_str3" id="payfastTimestamp" value=""/>
-                
-                <!-- 
-                  URLs - These must be configured for your deployment domain.
-                  Values are populated dynamically or via build-time injection.
-                -->
-                <input type="hidden" name="return_url" value=""/>
-                <input type="hidden" name="cancel_url" value=""/>
-                <input type="hidden" name="notify_url" value=""/>
-                
-                <!-- Email Confirmation - Configured at deployment -->
-                <input type="hidden" name="email_confirmation" value="1"/>
-                <input type="hidden" name="confirmation_address" value=""/>
+                <!-- Customer data populated from localStorage -->
+                <input type="hidden" name="submissionId" id="payfast_submissionId" value=""/>
+                <input type="hidden" name="businessName" id="payfast_businessName" value=""/>
+                <input type="hidden" name="firstName" id="payfast_firstName" value=""/>
+                <input type="hidden" name="lastName" id="payfast_lastName" value=""/>
+                <input type="hidden" name="email" id="payfast_email" value=""/>
+                <input type="hidden" name="phone" id="payfast_phone" value=""/>
+                <input type="hidden" name="timestamp" id="payfast_timestamp" value=""/>
                 
                 <!-- Submit Button -->
                 <button type="submit" class="gjs-t-button hero-primary-cta" id="payfastSubmitBtn">
@@ -264,12 +231,13 @@
 
         /**
          * Populate PayFast form fields from localStorage data
+         * These fields are sent to the server-side redirect handler
          */
         function populatePayFastForm(submissionId, formData, timestamp) {
-          // Custom fields for tracking
-          setValue('payfastSubmissionId', submissionId);
-          setValue('payfastBusinessName', formData.businessName || '');
-          setValue('payfastTimestamp', timestamp || new Date().toISOString());
+          // Submission tracking
+          setValue('payfast_submissionId', submissionId);
+          setValue('payfast_businessName', formData.businessName || '');
+          setValue('payfast_timestamp', timestamp || new Date().toISOString());
           
           // Customer details - split contact name into first/last
           const contactName = formData.contactName || '';
@@ -277,20 +245,10 @@
           const firstName = nameParts[0] || '';
           const lastName = nameParts.slice(1).join(' ') || '';
           
-          setValue('payfast_name_first', firstName);
-          setValue('payfast_name_last', lastName);
+          setValue('payfast_firstName', firstName);
+          setValue('payfast_lastName', lastName);
           setValue('payfast_email', formData.email || '');
-          
-          // Format phone number (remove spaces/dashes for PayFast)
-          const phone = (formData.phone || '').replace(/[\s\-\(\)]/g, '');
-          setValue('payfast_cell', phone);
-          
-          // Populate URL fields dynamically based on current domain
-          // These are non-sensitive configuration values
-          const baseUrl = window.location.origin;
-          setValueByName('return_url', baseUrl + '/thank-you-page.html');
-          setValueByName('cancel_url', baseUrl + '/subscribe.html');
-          setValueByName('notify_url', baseUrl + '/.netlify/functions/payfast-itn');
+          setValue('payfast_phone', formData.phone || '');
           
           console.log('PayFast form populated with customer details');
         }
@@ -300,16 +258,6 @@
          */
         function setValue(id, value) {
           const el = document.getElementById(id);
-          if (el) {
-            el.value = value;
-          }
-        }
-
-        /**
-         * Set value of a form field by name attribute
-         */
-        function setValueByName(name, value) {
-          const el = document.querySelector('input[name="' + name + '"]');
           if (el) {
             el.value = value;
           }
