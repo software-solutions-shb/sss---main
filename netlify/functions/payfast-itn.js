@@ -8,6 +8,7 @@
  * 3. Extracting the submission ID from custom fields
  * 4. Appending subscriber data to Airtable
  * 5. Sending email notification to business owner
+ * 6. Sending welcome email to client
  * 
  * Configuration is derived dynamically from PAYFAST_MODE environment variable.
  * 
@@ -16,7 +17,7 @@
 
 const { validatePayFastSignature, validatePayFastRequest } = require('./utils/payfast-validator');
 const { appendToAirtable } = require('./utils/airtable');
-const { sendNotificationEmail } = require('./utils/email-sender');
+const { sendNotificationEmail, sendWelcomeEmail } = require('./utils/email-sender');
 const { getPayFastCredentials, getPayFastModeLabel, logConfigStatus } = require('./utils/payfast-config');
 
 // ============================================
@@ -37,6 +38,7 @@ const { getPayFastCredentials, getPayFastModeLabel, logConfigStatus } = require(
 // Other required variables:
 //   AIRTABLE_API_KEY, AIRTABLE_BASE_ID, AIRTABLE_TABLE_NAME
 //   EMAIL_API_KEY, EMAIL_SERVICE, NOTIFICATION_EMAIL, FROM_EMAIL
+//   WHATSAPP_NUMBER - Business WhatsApp number for client welcome email (optional)
 
 /**
  * Main handler for PayFast ITN webhook
@@ -170,18 +172,39 @@ exports.handler = async function(event, context) {
     }
 
     // ----------------------------------------
-    // Step 8: Send email notification
+    // Step 8: Send email notification to OWNER
     // ----------------------------------------
+    // Sends notification to NOTIFICATION_EMAIL env var
+    // Uses EMAIL_API_KEY, EMAIL_SERVICE, FROM_EMAIL
     try {
       await sendNotificationEmail(subscriberData);
-      console.log('✓ Notification email sent');
+      console.log('✓ Owner notification email sent');
     } catch (emailError) {
-      console.error('ERROR: Failed to send notification email:', emailError.message);
+      console.error('ERROR: Failed to send owner notification email:', emailError.message);
       // Continue processing - don't fail the whole request
     }
 
     // ----------------------------------------
-    // Step 9: Return success to PayFast
+    // Step 9: Send welcome email to CLIENT
+    // ----------------------------------------
+    // Sends welcome email to client's email address from form submission
+    // Uses EMAIL_API_KEY, EMAIL_SERVICE, FROM_EMAIL, WHATSAPP_NUMBER (optional)
+    // Client email is extracted from subscriberData.email (from PayFast ITN data)
+    if (subscriberData.email) {
+      try {
+        await sendWelcomeEmail(subscriberData);
+        console.log('✓ Client welcome email sent to:', subscriberData.email.substring(0, 3) + '***');
+      } catch (clientEmailError) {
+        // Log error safely without exposing email address or secrets
+        console.error('ERROR: Failed to send client welcome email:', clientEmailError.message);
+        // Continue processing - don't fail the whole ITN request because of email errors
+      }
+    } else {
+      console.log('WARNING: No client email available, skipping welcome email');
+    }
+
+    // ----------------------------------------
+    // Step 10: Return success to PayFast
     // ----------------------------------------
     console.log('='.repeat(60));
     console.log('ITN Processing Complete - Success');

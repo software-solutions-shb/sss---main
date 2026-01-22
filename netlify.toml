@@ -78,5 +78,7 @@
 # -----------------------------------------------------
 #   EMAIL_API_KEY          - Email service API key (required)
 #   EMAIL_SERVICE          - Email provider identifier (required)
-#   NOTIFICATION_EMAIL     - Recipient for notifications (required)
+#   NOTIFICATION_EMAIL     - Recipient for owner notifications (required)
 #   FROM_EMAIL             - Verified sender address (required)
+#   WHATSAPP_NUMBER        - Business WhatsApp number for client emails (optional)
+#                            Example: (+27) 68 659 2320

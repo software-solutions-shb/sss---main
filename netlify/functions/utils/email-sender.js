@@ -366,7 +366,168 @@ async function sendTestEmail() {
   return sendNotificationEmail(testData);
 }
 
+/**
+ * Send welcome email to client after successful payment
+ * 
+ * @param {Object} subscriberData - The subscriber data from PayFast ITN
+ * @param {string} subscriberData.firstName - Client's first name
+ * @param {string} subscriberData.email - Client's email address
+ * @param {string} subscriberData.submissionId - Unique submission ID
+ * @returns {Promise<Object>} Email API response
+ * @throws {Error} If required environment variables or subscriber data is missing
+ */
+async function sendWelcomeEmail(subscriberData) {
+  const apiKey = process.env.EMAIL_API_KEY;
+  const fromEmail = process.env.FROM_EMAIL;
+  const emailService = process.env.EMAIL_SERVICE;
+  const whatsappNumber = process.env.WHATSAPP_NUMBER;
+
+  if (!apiKey) {
+    throw new Error('EMAIL_API_KEY environment variable is required but not set.');
+  }
+
+  if (!fromEmail) {
+    throw new Error('FROM_EMAIL environment variable is required but not set.');
+  }
+
+  if (!emailService) {
+    throw new Error('EMAIL_SERVICE environment variable is required but not set.');
+  }
+
+  // Validate subscriber data
+  const clientEmail = subscriberData.email;
+  if (!clientEmail) {
+    throw new Error('Client email address is required but not provided in subscriber data.');
+  }
+
+  const providerId = getProviderId(emailService);
+  if (!providerId) {
+    throw new Error('EMAIL_SERVICE environment variable has an invalid value.');
+  }
+
+  const providerConfig = PROVIDER_CONFIGS[providerId];
+  if (!providerConfig) {
+    throw new Error('Email provider configuration not found.');
+  }
+
+  // Build welcome email content
+  const emailContent = buildWelcomeEmailContent(subscriberData, whatsappNumber);
+
+  // Send via configured provider
+  return sendViaProvider(apiKey, fromEmail, clientEmail, emailContent, providerConfig);
+}
+
+/**
+ * Build welcome email content for client
+ * 
+ * @param {Object} data - Subscriber data
+ * @param {string} whatsappNumber - Business WhatsApp number from env
+ * @returns {Object} Email subject and body content
+ */
+function buildWelcomeEmailContent(data, whatsappNumber) {
+  const subject = 'Welcome to Software Solutions Services! 🎉';
+  
+  const firstName = data.firstName || 'Valued Customer';
+  const submissionId = data.submissionId || 'N/A';
+  // Use environment variable for WhatsApp, fallback to generic message if not set
+  const whatsapp = whatsappNumber || '(contact us via our website)';
+
+  // Plain text version
+  const textBody = `
+Hi ${firstName},
+
+Thank you for subscribing!
+
+Your submission ID is: ${submissionId}
+
+Here's what happens next:
+
+1. Our team will review your submission and begin setting up your landing page within 72 hours.
+
+2. You can reach us on WhatsApp at ${whatsapp}.
+
+3. Please do not share fake or incorrect information, as it may delay setup.
+
+We're excited to work with you!
+
+Best regards,
+Software Solutions Services Team
+
+---
+This is an automated message. Please do not reply directly to this email.
+`.trim();
+
+  // TODO: Add styled HTML version of this email
+  // For now, using a simple HTML wrapper around the plain text content
+  const htmlBody = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Welcome to Software Solutions Services</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f5f5f5;">
+  <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+    
+    <!-- Header -->
+    <div style="background: linear-gradient(135deg, #0a84ff 0%, #1f5fff 100%); color: white; padding: 30px; border-radius: 12px 12px 0 0; text-align: center;">
+      <h1 style="margin: 0; font-size: 24px; font-weight: 600;">Welcome! 🎉</h1>
+      <p style="margin: 10px 0 0; opacity: 0.9;">Software Solutions Services</p>
+    </div>
+    
+    <!-- Content -->
+    <div style="background: white; padding: 30px; border-radius: 0 0 12px 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+      
+      <p style="color: #333; font-size: 16px; line-height: 1.6; margin: 0 0 20px;">
+        Hi <strong>${firstName}</strong>,
+      </p>
+      
+      <p style="color: #333; font-size: 16px; line-height: 1.6; margin: 0 0 20px;">
+        Thank you for subscribing!
+      </p>
+      
+      <!-- Submission ID Box -->
+      <div style="background: #f0f9ff; border: 1px solid #0a84ff; border-radius: 8px; padding: 15px; margin-bottom: 20px; text-align: center;">
+        <p style="margin: 0; color: #666; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Your Submission ID</p>
+        <p style="margin: 5px 0 0; color: #0a84ff; font-size: 18px; font-weight: 600; font-family: monospace;">${submissionId}</p>
+      </div>
+      
+      <h3 style="color: #333; font-size: 16px; margin: 20px 0 15px;">Here's what happens next:</h3>
+      
+      <ol style="color: #555; font-size: 15px; line-height: 1.8; padding-left: 20px; margin: 0 0 20px;">
+        <li style="margin-bottom: 10px;">Our team will review your submission and begin setting up your landing page <strong>within 72 hours</strong>.</li>
+        <li style="margin-bottom: 10px;">You can reach us on WhatsApp at <strong>${whatsapp}</strong>.</li>
+        <li style="margin-bottom: 10px;">Please do not share fake or incorrect information, as it may delay setup.</li>
+      </ol>
+      
+      <p style="color: #333; font-size: 16px; line-height: 1.6; margin: 20px 0;">
+        We're excited to work with you!
+      </p>
+      
+      <p style="color: #333; font-size: 16px; line-height: 1.6; margin: 0;">
+        Best regards,<br>
+        <strong>Software Solutions Services Team</strong>
+      </p>
+      
+    </div>
+    
+    <!-- Footer -->
+    <div style="text-align: center; padding: 20px; color: #999; font-size: 12px;">
+      <p style="margin: 0;">This is an automated message. Please do not reply directly to this email.</p>
+      <p style="margin: 5px 0 0;">© ${new Date().getFullYear()} Software Solutions Services</p>
+    </div>
+    
+  </div>
+</body>
+</html>
+`.trim();
+
+  return { subject, textBody, htmlBody };
+}
+
 module.exports = {
   sendNotificationEmail,
+  sendWelcomeEmail,
   sendTestEmail
 };
