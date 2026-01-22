@@ -630,16 +630,23 @@
         // ============================================
         const ENABLE_DEMO_MODE = true; // Set to false for production
         
+        // DEMO_DATA uses the ACTUAL field names from collect-details.html form:
+        // - ownerFirstName, ownerLastName (not contactName)
+        // - businessEmail (not email)
+        // - businessPhone (not phone)
+        // - businessName (correct)
         const DEMO_DATA = {
           submissionId: 'SSS-DEMO-TEST01',
           timestamp: new Date().toISOString(),
           formData: {
-            contactName: 'Test User',
-            email: 'test@example.com',
-            phone: '0821234567',
+            // These field names MUST match the 'name' attributes in collect-details.html
+            ownerFirstName: 'Test',
+            ownerLastName: 'User',
+            businessEmail: 'test@example.com',
+            businessPhone: '0821234567',
             businessName: 'Demo Business (Pty) Ltd',
             industry: 'Technology',
-            website: 'https://example.com'
+            whatsappNumber: '0821234567'
           },
           metadata: {
             source: 'demo_mode',
@@ -806,30 +813,48 @@
         
         /**
          * Display customer information in summary box
+         * 
+         * FIELD NAME MAPPING (collect-details.html → display):
+         * - ownerFirstName + ownerLastName → Name
+         * - businessEmail → Email  
+         * - businessPhone → Phone
+         * - businessName → Business
+         * 
+         * DEBUG: Logs all available formData keys to help identify issues
          */
         function displayCustomerInfo(formData) {
-          // Name
+          // DEBUG: Log all available keys in formData
+          log('DEBUG: All formData keys:', Object.keys(formData));
+          log('DEBUG: Full formData object:', JSON.stringify(formData, null, 2));
+          
+          // Name - combine ownerFirstName + ownerLastName from form
+          // The form uses separate first/last name fields, not a single contactName
           const nameEl = document.getElementById('displayName');
           if (nameEl) {
-            nameEl.textContent = formData.contactName || 'Not provided';
-            log('Display name:', formData.contactName);
+            const firstName = formData.ownerFirstName || '';
+            const lastName = formData.ownerLastName || '';
+            const fullName = (firstName + ' ' + lastName).trim();
+            nameEl.textContent = fullName || 'Not provided';
+            log('Display name:', fullName, '(from ownerFirstName + ownerLastName)');
           }
           
-          // Email
+          // Email - the form field is named 'businessEmail', not 'email'
           const emailEl = document.getElementById('displayEmail');
           if (emailEl) {
-            emailEl.textContent = formData.email || 'Not provided';
-            log('Display email:', formData.email ? '***@***' : 'Not provided');
+            const email = formData.businessEmail || '';
+            emailEl.textContent = email || 'Not provided';
+            log('Display email:', email ? '***@***' : 'Not provided', '(from businessEmail)');
           }
           
-          // Phone
+          // Phone - the form field is named 'businessPhone', not 'phone'
           const phoneEl = document.getElementById('displayPhone');
           if (phoneEl) {
-            phoneEl.textContent = formData.phone || 'Not provided';
-            log('Display phone:', formData.phone ? '***' : 'Not provided');
+            const phone = formData.businessPhone || '';
+            phoneEl.textContent = phone || 'Not provided';
+            log('Display phone:', phone ? '***' : 'Not provided', '(from businessPhone)');
           }
           
-          // Business
+          // Business - this field name matches correctly
           const businessEl = document.getElementById('displayBusiness');
           if (businessEl) {
             businessEl.textContent = formData.businessName || 'Not provided';
@@ -840,6 +865,13 @@
         /**
          * Populate PayFast form hidden fields
          * These are sent to the server-side redirect handler
+         * 
+         * FIELD NAME MAPPING (collect-details.html → PayFast):
+         * - ownerFirstName → firstName
+         * - ownerLastName → lastName
+         * - businessEmail → email
+         * - businessPhone → phone
+         * - businessName → businessName
          */
         function populatePayFastForm(submissionId, formData, timestamp) {
           log('Populating PayFast form fields...');
@@ -849,22 +881,24 @@
           setValue('payfast_businessName', formData.businessName || '');
           setValue('payfast_timestamp', timestamp || new Date().toISOString());
           
-          // Split contact name into first/last for PayFast
-          const contactName = formData.contactName || '';
-          const nameParts = contactName.trim().split(/\s+/);
-          const firstName = nameParts[0] || '';
-          const lastName = nameParts.slice(1).join(' ') || '';
+          // The form already has separate first/last name fields
+          // Use them directly instead of trying to split a combined name
+          const firstName = formData.ownerFirstName || '';
+          const lastName = formData.ownerLastName || '';
           
           setValue('payfast_firstName', firstName);
           setValue('payfast_lastName', lastName);
-          setValue('payfast_email', formData.email || '');
-          setValue('payfast_phone', formData.phone || '');
+          
+          // Use the correct field names from the form
+          setValue('payfast_email', formData.businessEmail || '');
+          setValue('payfast_phone', formData.businessPhone || '');
           
           log('PayFast form fields populated:', {
             submissionId,
             firstName,
             lastName,
-            email: formData.email ? '***' : 'empty',
+            email: formData.businessEmail ? '***' : 'empty',
+            phone: formData.businessPhone ? '***' : 'empty',
             businessName: formData.businessName
           });
         }
