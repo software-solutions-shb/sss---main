@@ -1,19 +1,359 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>Secure Subscription — Software Solutions Services</title>
+    <title>Complete Your Subscription — Software Solutions Services</title>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <meta name="robots" content="noindex,nofollow">
+    <meta name="description" content="Complete your subscription to Software Solutions Services. Secure payment processing."/>
+    <meta name="robots" content="noindex,nofollow"/>
     <link rel="preconnect" href="https://fonts.googleapis.com"/>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""/>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=DM+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
-    <link rel="stylesheet" href="./style.css">
+    <link rel="stylesheet" href="./style.css"/>
+    
+    <!-- ========================================
+         SUBSCRIBE PAGE STYLES
+         
+         DEBUG NOTE: These inline styles ensure all sections
+         are visible regardless of external CSS issues.
+         All styles use !important during debugging.
+    ======================================== -->
+    <style>
+      /* Container for checkout card */
+      .subscribe-container {
+        max-width: 640px;
+        margin: 0 auto;
+        padding: 2rem 1.5rem;
+        width: 100%;
+        box-sizing: border-box;
+      }
+      
+      /* Main checkout card */
+      .checkout-card {
+        background: rgba(255, 255, 255, 0.03) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        border-radius: 1rem !important;
+        padding: 2rem !important;
+        margin-bottom: 1.5rem !important;
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+      }
+      
+      /* Status badge (success/error) */
+      .status-badge {
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 0.5rem !important;
+        padding: 0.5rem 1rem !important;
+        border-radius: 2rem !important;
+        margin-bottom: 1.5rem !important;
+        font-size: 0.875rem !important;
+        font-weight: 500 !important;
+      }
+      .status-badge.success {
+        background: rgba(34, 197, 94, 0.1) !important;
+        border: 1px solid rgba(34, 197, 94, 0.3) !important;
+        color: #22c55e !important;
+      }
+      .status-badge.error {
+        background: rgba(239, 68, 68, 0.1) !important;
+        border: 1px solid rgba(239, 68, 68, 0.3) !important;
+        color: #ef4444 !important;
+      }
+      .status-badge.demo {
+        background: rgba(251, 191, 36, 0.1) !important;
+        border: 1px solid rgba(251, 191, 36, 0.3) !important;
+        color: #fbbf24 !important;
+      }
+      
+      /* Submission ID box */
+      .submission-id-box {
+        background: rgba(10, 132, 255, 0.08) !important;
+        border: 1px solid rgba(10, 132, 255, 0.2) !important;
+        border-radius: 0.75rem !important;
+        padding: 1rem 1.5rem !important;
+        text-align: center !important;
+        margin-bottom: 1.5rem !important;
+        display: block !important;
+      }
+      .submission-id-label {
+        color: rgba(255, 255, 255, 0.6) !important;
+        font-size: 0.75rem !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.05em !important;
+        margin-bottom: 0.25rem !important;
+        display: block !important;
+      }
+      .submission-id-value {
+        color: #0a84ff !important;
+        font-size: 1.25rem !important;
+        font-weight: 600 !important;
+        font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace !important;
+        letter-spacing: 0.05em !important;
+        display: block !important;
+      }
+      
+      /* Customer info summary box */
+      .customer-info-box {
+        background: rgba(255, 255, 255, 0.02) !important;
+        border-radius: 0.75rem !important;
+        padding: 1rem !important;
+        margin-bottom: 1.5rem !important;
+        display: block !important;
+      }
+      .customer-info-row {
+        display: flex !important;
+        justify-content: space-between !important;
+        padding: 0.625rem 0 !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+      }
+      .customer-info-row:last-child {
+        border-bottom: none !important;
+      }
+      .customer-info-label {
+        color: rgba(255, 255, 255, 0.5) !important;
+        font-size: 0.875rem !important;
+      }
+      .customer-info-value {
+        color: #ffffff !important;
+        font-size: 0.875rem !important;
+        font-weight: 500 !important;
+        text-align: right !important;
+      }
+      
+      /* Pricing breakdown */
+      .pricing-breakdown {
+        background: linear-gradient(135deg, rgba(10, 132, 255, 0.1) 0%, rgba(31, 95, 255, 0.05) 100%) !important;
+        border: 1px solid rgba(10, 132, 255, 0.2) !important;
+        border-radius: 0.75rem !important;
+        padding: 1.5rem !important;
+        margin-bottom: 1.5rem !important;
+        display: block !important;
+      }
+      .pricing-row {
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        margin-bottom: 0.625rem !important;
+      }
+      .pricing-row:last-child {
+        margin-bottom: 0 !important;
+      }
+      .pricing-label {
+        color: rgba(255, 255, 255, 0.8) !important;
+        font-size: 0.95rem !important;
+      }
+      .pricing-value {
+        color: #ffffff !important;
+        font-size: 1rem !important;
+        font-weight: 600 !important;
+      }
+      .pricing-value.highlight {
+        color: #22c55e !important;
+        font-size: 1.25rem !important;
+      }
+      .pricing-divider {
+        height: 1px !important;
+        background: rgba(255, 255, 255, 0.1) !important;
+        margin: 0.75rem 0 !important;
+      }
+      .pricing-note {
+        color: rgba(255, 255, 255, 0.5) !important;
+        font-size: 0.8rem !important;
+        text-align: center !important;
+        margin-top: 0.75rem !important;
+      }
+      
+      /* Security callout */
+      .security-callout {
+        display: flex !important;
+        gap: 1rem !important;
+        padding: 1rem !important;
+        background: rgba(10, 132, 255, 0.08) !important;
+        border: 1px solid rgba(10, 132, 255, 0.2) !important;
+        border-radius: 0.75rem !important;
+        margin-bottom: 1.5rem !important;
+        text-align: left !important;
+      }
+      .security-callout-icon {
+        flex-shrink: 0 !important;
+        width: 24px !important;
+        height: 24px !important;
+      }
+      .security-callout h4 {
+        color: #ffffff !important;
+        font-size: 0.95rem !important;
+        font-weight: 600 !important;
+        margin: 0 0 0.25rem !important;
+      }
+      .security-callout p {
+        color: rgba(255, 255, 255, 0.8) !important;
+        font-size: 0.875rem !important;
+        margin: 0 !important;
+        line-height: 1.5 !important;
+      }
+      
+      /* Subscribe button */
+      .subscribe-button {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 0.5rem !important;
+        width: 100% !important;
+        padding: 1rem 2rem !important;
+        background: linear-gradient(135deg, #0a84ff 0%, #1f5fff 100%) !important;
+        color: #ffffff !important;
+        font-size: 1.1rem !important;
+        font-weight: 600 !important;
+        border: none !important;
+        border-radius: 0.75rem !important;
+        cursor: pointer !important;
+        transition: all 0.2s ease !important;
+        box-shadow: 0 4px 14px rgba(10, 132, 255, 0.4) !important;
+        text-decoration: none !important;
+      }
+      .subscribe-button:hover:not(:disabled) {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 6px 20px rgba(10, 132, 255, 0.5) !important;
+      }
+      .subscribe-button:disabled {
+        opacity: 0.5 !important;
+        cursor: not-allowed !important;
+        transform: none !important;
+      }
+      .subscribe-button-subtext {
+        display: block !important;
+        color: rgba(255, 255, 255, 0.7) !important;
+        font-size: 0.75rem !important;
+        font-weight: 400 !important;
+        margin-top: 0.25rem !important;
+      }
+      
+      /* Trust badges */
+      .trust-badges {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        justify-content: center !important;
+        gap: 1.5rem !important;
+        margin: 1.5rem 0 !important;
+        padding: 1rem 0 !important;
+        border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+      }
+      .trust-badge {
+        display: flex !important;
+        align-items: center !important;
+        gap: 0.5rem !important;
+        color: rgba(255, 255, 255, 0.6) !important;
+        font-size: 0.8rem !important;
+      }
+      .trust-badge img {
+        opacity: 0.7 !important;
+      }
+      
+      /* PayFast branding */
+      .payfast-branding {
+        text-align: center !important;
+        padding-top: 1rem !important;
+        display: block !important;
+      }
+      .payfast-branding p {
+        color: rgba(255, 255, 255, 0.4) !important;
+        font-size: 0.75rem !important;
+        margin-bottom: 0.5rem !important;
+      }
+      .payfast-branding img {
+        height: 28px !important;
+        opacity: 0.8 !important;
+      }
+      
+      /* Disclaimers */
+      .disclaimers {
+        margin-top: 1.5rem !important;
+        display: block !important;
+      }
+      .disclaimer-item {
+        display: flex !important;
+        align-items: flex-start !important;
+        gap: 0.75rem !important;
+        margin-bottom: 0.75rem !important;
+        color: rgba(255, 255, 255, 0.6) !important;
+        font-size: 0.85rem !important;
+        line-height: 1.5 !important;
+      }
+      .disclaimer-item img {
+        flex-shrink: 0 !important;
+        margin-top: 0.125rem !important;
+        opacity: 0.6 !important;
+      }
+      
+      /* Back link */
+      .back-link {
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 0.5rem !important;
+        color: rgba(255, 255, 255, 0.6) !important;
+        font-size: 0.875rem !important;
+        text-decoration: none !important;
+        margin-top: 1.5rem !important;
+        padding: 0.5rem 0 !important;
+        transition: color 0.2s ease !important;
+      }
+      .back-link:hover {
+        color: #0a84ff !important;
+      }
+      
+      /* Debug indicator (shows when demo data is used) */
+      .debug-banner {
+        background: rgba(251, 191, 36, 0.15) !important;
+        border: 1px solid rgba(251, 191, 36, 0.4) !important;
+        color: #fbbf24 !important;
+        padding: 0.75rem 1rem !important;
+        border-radius: 0.5rem !important;
+        margin-bottom: 1rem !important;
+        font-size: 0.8rem !important;
+        text-align: center !important;
+        display: none !important; /* Hidden by default, shown via JS if demo mode */
+      }
+      .debug-banner.visible {
+        display: block !important;
+      }
+      
+      /* Mobile responsive */
+      @media (max-width: 640px) {
+        .subscribe-container {
+          padding: 1rem !important;
+        }
+        .checkout-card {
+          padding: 1.5rem !important;
+        }
+        .trust-badges {
+          gap: 1rem !important;
+        }
+        .trust-badge {
+          font-size: 0.75rem !important;
+        }
+        .customer-info-row {
+          flex-direction: column !important;
+          gap: 0.25rem !important;
+        }
+        .customer-info-value {
+          text-align: left !important;
+        }
+        .subscribe-button {
+          padding: 0.875rem 1.5rem !important;
+          font-size: 1rem !important;
+        }
+      }
+    </style>
   </head>
+  
   <body class="gjs-t-body body-wrapper">
     
     <!-- ========================================
          HEADER
+         Software Solutions Services branding
     ======================================== -->
     <header class="header">
       <div class="header-container">
@@ -26,114 +366,215 @@
 
     <!-- ========================================
          MAIN CONTENT
+         Checkout/Subscribe flow
     ======================================== -->
     <main class="main-content">
-      <section class="hero-section" style="min-height: 70vh; display: flex; align-items: center;">
+      <section class="hero-section" style="min-height: calc(100vh - 80px); display: flex; align-items: center;">
         <div class="hero-background">
           <div class="hero-blob-1"></div>
           <div class="hero-blob-2"></div>
           <div class="hero-blob-3"></div>
         </div>
         
-        <div class="hero-container" style="text-align: center; max-width: 700px; margin: 0 auto; padding: 2rem;">
+        <div class="subscribe-container">
           
-          <!-- Success Badge -->
-          <div class="gjs-t-border hero-eyebrow" style="display: inline-flex; margin-bottom: 1.5rem;">
-            <img src="https://api.iconify.design/lucide-check-circle.svg?color=%2322c55e" alt="Success" width="20" height="20"/>
-            <span class="hero-eyebrow-text" style="color: #22c55e;">Details saved successfully</span>
+          <!-- Page Header -->
+          <div style="text-align: center; margin-bottom: 2rem;">
+            <h1 class="gjs-t-h1 hero-heading" style="font-size: 2rem; margin-bottom: 0.5rem;">Complete Your Subscription</h1>
+            <p style="color: rgba(255,255,255,0.7); font-size: 1rem; margin: 0;">Review your details and proceed to secure payment</p>
           </div>
           
-          <h1 class="gjs-t-h1 hero-heading">Secure Subscription</h1>
-          <p class="hero-subheading" style="margin-bottom: 1rem; color: rgba(255,255,255,0.9);">You're almost done</p>
-          
-          <!-- Submission ID Display -->
-          <div id="submissionInfo" class="gjs-t-border" style="padding: 1rem 1.5rem; margin-bottom: 2rem; background-color: rgba(255,255,255,0.05); border-radius: 0.75rem;">
-            <p style="color: rgba(255,255,255,0.7); font-size: 0.875rem; margin-bottom: 0.25rem;">Your Submission ID</p>
-            <p id="submissionIdDisplay" style="color: #ffffff; font-size: 1.25rem; font-weight: 600; font-family: monospace; letter-spacing: 0.05em;">Loading...</p>
-          </div>
-
-          <!-- Confirmation Message -->
-          <div class="gjs-t-border" style="padding: 1.5rem; margin-bottom: 2rem; background-color: rgba(10, 132, 255, 0.08); border-color: rgba(10, 132, 255, 0.3); border-radius: 0.75rem;">
-            <div style="display: flex; align-items: flex-start; gap: 1rem; text-align: left;">
-              <img src="https://api.iconify.design/lucide-shield-check.svg?color=%230a84ff" alt="Secure" width="24" height="24" style="flex-shrink: 0; margin-top: 0.125rem;"/>
-              <div>
-                <p style="color: #ffffff; font-weight: 600; margin-bottom: 0.5rem;">Proceeding to Secure Payment</p>
-                <p style="color: rgba(255,255,255,0.85); font-size: 0.95rem;">Your business details have been saved. Complete your subscription below to start your free month. Payment is processed securely by PayFast.</p>
-              </div>
-            </div>
-          </div>
-
           <!-- ========================================
-               PAYFAST SUBSCRIPTION FORM
-               
-               PayFast subscription form configured for:
-               - Initial amount: R0.00 (first month free)
-               - Recurring amount: R499.99/month
-               - Monthly billing (frequency 3)
-               - Indefinite cycles (until cancelled)
-               - ITN webhook for payment confirmation
-               
-               SECURITY NOTE: All merchant credentials and PayFast URLs
-               are handled server-side via the payfast-redirect function.
-               No sensitive values are exposed to the client.
+               DEBUG BANNER
+               Shows when demo/test data is being used.
+               Hidden by default, activated by JavaScript.
           ======================================== -->
-          <div id="payfastFormContainer" class="gjs-t-border" style="padding: 2rem; background-color: rgba(255,255,255,0.03); border-radius: 1rem; margin-bottom: 2rem;">
+          <div id="debugBanner" class="debug-banner">
+            ⚠️ <strong>DEMO MODE:</strong> Using sample data for testing. Complete the 
+            <a href="./collect-details.html" style="color: #fbbf24; text-decoration: underline;">details form</a> 
+            for real submissions.
+          </div>
+          
+          <!-- ========================================
+               MAIN CHECKOUT CARD
+               Contains all subscription details
+          ======================================== -->
+          <div id="mainCheckoutCard" class="checkout-card">
             
+            <!-- Status Badge -->
             <div style="text-align: center;">
-              <img src="https://api.iconify.design/lucide-credit-card.svg?color=%23ffffff" alt="Payment" width="48" height="48" style="margin-bottom: 1rem; opacity: 0.8;"/>
-              <h3 style="color: #ffffff; font-size: 1.25rem; font-weight: 600; margin-bottom: 0.75rem;">Subscribe Now</h3>
-              <p style="color: rgba(255,255,255,0.7); font-size: 0.95rem; margin-bottom: 1.5rem;">First month free (R0.00), then R499.99/month. Cancel anytime.</p>
-              
-              <!-- PayFast Redirect Form - Posts to server-side handler -->
-              <form id="payfastForm" action="/.netlify/functions/payfast-redirect" method="POST">
-                
-                <!-- Customer data populated from localStorage -->
-                <input type="hidden" name="submissionId" id="payfast_submissionId" value=""/>
-                <input type="hidden" name="businessName" id="payfast_businessName" value=""/>
-                <input type="hidden" name="firstName" id="payfast_firstName" value=""/>
-                <input type="hidden" name="lastName" id="payfast_lastName" value=""/>
-                <input type="hidden" name="email" id="payfast_email" value=""/>
-                <input type="hidden" name="phone" id="payfast_phone" value=""/>
-                <input type="hidden" name="timestamp" id="payfast_timestamp" value=""/>
-                
-                <!-- Submit Button -->
-                <button type="submit" class="gjs-t-button hero-primary-cta" id="payfastSubmitBtn">
-                  <img src="https://api.iconify.design/lucide-lock.svg?color=%23ffffff" alt="Secure" width="18" height="18" style="margin-right: 0.5rem;"/>
-                  Complete Subscription — R0.00 Today
-                </button>
-                
-              </form>
-              
-              <!-- PayFast Logo/Trust Badge -->
-              <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1);">
-                <p style="color: rgba(255,255,255,0.5); font-size: 0.75rem; margin-bottom: 0.5rem;">Secured by</p>
-                <img src="https://www.payfast.co.za/assets/images/branding/payfast-logo-colour.svg" alt="PayFast" height="24" style="height: 24px; opacity: 0.8;"/>
+              <div id="statusBadge" class="status-badge success">
+                <img src="https://api.iconify.design/lucide-check-circle.svg?color=%2322c55e" alt="" width="18" height="18"/>
+                <span id="statusText">Details saved successfully</span>
               </div>
+            </div>
+            
+            <!-- Submission ID Display -->
+            <div id="submissionIdBox" class="submission-id-box">
+              <span class="submission-id-label">Your Submission ID</span>
+              <span id="submissionIdDisplay" class="submission-id-value">Loading...</span>
+            </div>
+            
+            <!-- ========================================
+                 CUSTOMER INFO SUMMARY
+                 Displays name, email, business from localStorage
+            ======================================== -->
+            <div id="customerInfoBox" class="customer-info-box">
+              <div class="customer-info-row">
+                <span class="customer-info-label">Name</span>
+                <span id="displayName" class="customer-info-value">—</span>
+              </div>
+              <div class="customer-info-row">
+                <span class="customer-info-label">Email</span>
+                <span id="displayEmail" class="customer-info-value">—</span>
+              </div>
+              <div class="customer-info-row">
+                <span class="customer-info-label">Phone</span>
+                <span id="displayPhone" class="customer-info-value">—</span>
+              </div>
+              <div class="customer-info-row">
+                <span class="customer-info-label">Business</span>
+                <span id="displayBusiness" class="customer-info-value">—</span>
+              </div>
+            </div>
+            
+            <!-- ========================================
+                 PRICING BREAKDOWN
+                 Shows today's charge and recurring amount
+            ======================================== -->
+            <div class="pricing-breakdown">
+              <div class="pricing-row">
+                <span class="pricing-label">Landing Page Subscription</span>
+                <span class="pricing-value">R499.99/mo</span>
+              </div>
+              <div class="pricing-row">
+                <span class="pricing-label">First Month Promotional Discount</span>
+                <span class="pricing-value" style="color: #22c55e;">−R499.99</span>
+              </div>
+              <div class="pricing-divider"></div>
+              <div class="pricing-row">
+                <span class="pricing-label" style="font-weight: 600;">Due Today</span>
+                <span class="pricing-value highlight">R0.00</span>
+              </div>
+              <p class="pricing-note">Then R499.99/month starting next billing cycle</p>
+            </div>
+            
+            <!-- ========================================
+                 SECURITY CALLOUT
+                 Explains secure payment processing
+            ======================================== -->
+            <div class="security-callout">
+              <img src="https://api.iconify.design/lucide-shield-check.svg?color=%230a84ff" alt="" width="24" height="24" class="security-callout-icon"/>
+              <div>
+                <h4>Secure Payment Processing</h4>
+                <p>You'll be redirected to PayFast, South Africa's trusted payment gateway, to complete your subscription securely. Your card details are never stored on our servers.</p>
+              </div>
+            </div>
+            
+            <!-- ========================================
+                 PAYFAST SUBSCRIPTION FORM
+                 
+                 Configuration:
+                 - Initial amount: R0.00 (first month free)
+                 - Recurring amount: R499.99/month
+                 - Monthly billing (frequency 3)
+                 - Indefinite cycles (until cancelled)
+                 
+                 SECURITY: All merchant credentials and PayFast URLs
+                 are handled server-side via payfast-redirect function.
+                 No sensitive values are exposed in this HTML.
+                 
+                 The form posts to /.netlify/functions/payfast-redirect
+                 which injects credentials based on environment mode.
+            ======================================== -->
+            <form id="payfastForm" action="/.netlify/functions/payfast-redirect" method="POST" style="text-align: center;">
               
+              <!-- Hidden fields populated from localStorage -->
+              <input type="hidden" name="submissionId" id="payfast_submissionId" value=""/>
+              <input type="hidden" name="businessName" id="payfast_businessName" value=""/>
+              <input type="hidden" name="firstName" id="payfast_firstName" value=""/>
+              <input type="hidden" name="lastName" id="payfast_lastName" value=""/>
+              <input type="hidden" name="email" id="payfast_email" value=""/>
+              <input type="hidden" name="phone" id="payfast_phone" value=""/>
+              <input type="hidden" name="timestamp" id="payfast_timestamp" value=""/>
+              
+              <!-- Item details (passed to PayFast via redirect) -->
+              <input type="hidden" name="itemName" value="Landing Page Subscription - First Month Free"/>
+              <input type="hidden" name="itemDescription" value="Professional landing page design and hosting subscription"/>
+              <input type="hidden" name="amount" value="0.00"/>
+              <input type="hidden" name="recurringAmount" value="499.99"/>
+              
+              <!-- Subscribe Button -->
+              <button type="submit" id="payfastSubmitBtn" class="subscribe-button">
+                <img src="https://api.iconify.design/lucide-lock.svg?color=%23ffffff" alt="" width="20" height="20"/>
+                <span>
+                  Proceed to Payment
+                  <span class="subscribe-button-subtext">Pay R0.00 today — First month free!</span>
+                </span>
+              </button>
+              
+            </form>
+            
+            <!-- ========================================
+                 TRUST BADGES
+                 Security and trust indicators
+            ======================================== -->
+            <div class="trust-badges">
+              <div class="trust-badge">
+                <img src="https://api.iconify.design/lucide-shield-check.svg?color=%23ffffff" alt="" width="16" height="16"/>
+                <span>256-bit SSL</span>
+              </div>
+              <div class="trust-badge">
+                <img src="https://api.iconify.design/lucide-lock.svg?color=%23ffffff" alt="" width="16" height="16"/>
+                <span>Secure Processing</span>
+              </div>
+              <div class="trust-badge">
+                <img src="https://api.iconify.design/lucide-credit-card.svg?color=%23ffffff" alt="" width="16" height="16"/>
+                <span>PCI Compliant</span>
+              </div>
+              <div class="trust-badge">
+                <img src="https://api.iconify.design/lucide-rotate-ccw.svg?color=%23ffffff" alt="" width="16" height="16"/>
+                <span>Cancel Anytime</span>
+              </div>
+            </div>
+            
+            <!-- ========================================
+                 PAYFAST BRANDING
+                 Official PayFast logo
+            ======================================== -->
+            <div class="payfast-branding">
+              <p>Payments secured by</p>
+              <img src="https://www.payfast.co.za/assets/images/branding/payfast-logo-colour.svg" alt="PayFast - Secure Payment Gateway"/>
+            </div>
+            
+          </div>
+          
+          <!-- ========================================
+               DISCLAIMERS
+               Important subscription information
+          ======================================== -->
+          <div class="disclaimers">
+            <div class="disclaimer-item">
+              <img src="https://api.iconify.design/lucide-info.svg?color=%23ffffff" alt="" width="16" height="16"/>
+              <span>Your first month is completely free. Your subscription begins immediately, and you'll be billed R499.99 on your next billing date.</span>
+            </div>
+            <div class="disclaimer-item">
+              <img src="https://api.iconify.design/lucide-x-circle.svg?color=%23ffffff" alt="" width="16" height="16"/>
+              <span>Cancel anytime with no penalties. You can manage your subscription through PayFast or by contacting us directly.</span>
+            </div>
+            <div class="disclaimer-item">
+              <img src="https://api.iconify.design/lucide-mail.svg?color=%23ffffff" alt="" width="16" height="16"/>
+              <span>After payment, you'll receive a confirmation email with your receipt and next steps. Our team will contact you within 72 hours.</span>
             </div>
           </div>
-
-          <!-- Security & Trust Signals -->
-          <div style="display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap; margin-bottom: 2rem;">
-            <div style="display: flex; align-items: center; gap: 0.5rem;">
-              <img src="https://api.iconify.design/lucide-shield-check.svg?color=%23ffffff" alt="Secure" width="18" height="18" style="opacity: 0.7;"/>
-              <span style="color: rgba(255,255,255,0.7); font-size: 0.875rem;">256-bit SSL Encryption</span>
-            </div>
-            <div style="display: flex; align-items: center; gap: 0.5rem;">
-              <img src="https://api.iconify.design/lucide-lock.svg?color=%23ffffff" alt="Protected" width="18" height="18" style="opacity: 0.7;"/>
-              <span style="color: rgba(255,255,255,0.7); font-size: 0.875rem;">Secure PayFast Processing</span>
-            </div>
-            <div style="display: flex; align-items: center; gap: 0.5rem;">
-              <img src="https://api.iconify.design/lucide-x-circle.svg?color=%23ffffff" alt="Cancel" width="18" height="18" style="opacity: 0.7;"/>
-              <span style="color: rgba(255,255,255,0.7); font-size: 0.875rem;">Cancel Anytime</span>
-            </div>
-          </div>
-
+          
           <!-- Back Link -->
-          <a href="./collect-details.html" style="display: inline-flex; align-items: center; gap: 0.5rem; color: rgba(255,255,255,0.7); font-size: 0.875rem; text-decoration: none;">
-            <img src="https://api.iconify.design/lucide-arrow-left.svg?color=%23ffffff" alt="Back" width="16" height="16" style="opacity: 0.7;"/>
-            <span>Back to edit details</span>
-          </a>
+          <div style="text-align: center;">
+            <a href="./collect-details.html" class="back-link">
+              <img src="https://api.iconify.design/lucide-arrow-left.svg?color=%23ffffff" alt="" width="16" height="16"/>
+              <span>Back to edit your details</span>
+            </a>
+          </div>
           
         </div>
       </section>
@@ -142,7 +583,7 @@
     <!-- ========================================
          FOOTER
     ======================================== -->
-    <section id="brand-new-footer" aria-label="Brand New Footer" class="brand-footer-section">
+    <footer class="brand-footer-section" aria-label="Site Footer">
       <div class="brand-footer-container">
         <div class="brand-footer-left">
           <div class="brand-name">Software Solutions Services</div>
@@ -153,93 +594,276 @@
           <a href="./terms-of-service.html" aria-label="Terms of Service" class="footer-link">Terms of Service</a>
         </div>
         <div class="brand-footer-right">
-          <span class="copyright">© 2025 Software Solutions Services. All rights reserved.</span>
+          <span class="copyright">© 2026 Software Solutions Services. All rights reserved.</span>
         </div>
       </div>
-    </section>
+    </footer>
 
     <!-- ========================================
          JAVASCRIPT
+         
+         Subscribe Page Script with Debug Mode
+         
+         FEATURES:
+         1. Reads submission data from localStorage
+         2. Displays all customer details
+         3. Populates PayFast hidden form fields
+         4. Provides fallback DEMO data if localStorage is empty
+         5. Comprehensive console logging for debugging
+         6. Visual indicators for demo mode vs real data
+         
+         DEBUG MODE:
+         - If localStorage is empty, demo data is loaded
+         - A yellow banner appears indicating demo mode
+         - All sections still render so you can verify layout
+         - Form still submits to PayFast (sandbox mode will work)
+         
+         TO RESTORE NORMAL FLOW:
+         - Remove or comment out the DEMO_DATA constant
+         - Remove the useDemoData fallback logic
+         - The page will then require real localStorage data
     ======================================== -->
     <script>
-      /**
-       * Subscribe Page Script
-       * Reads submission data from localStorage, displays confirmation,
-       * and populates the PayFast form with customer details
-       */
       (function() {
         'use strict';
 
+        // ============================================
+        // CONFIGURATION
+        // ============================================
+        
+        // Storage key must match form.js
         const STORAGE_KEY = 'sss_submission_data';
+        
+        // ============================================
+        // DEBUG: DEMO DATA FOR TESTING
+        // 
+        // This sample data ensures all sections render
+        // even when localStorage is empty.
+        // 
+        // TO DISABLE: Set ENABLE_DEMO_MODE to false
+        // ============================================
+        const ENABLE_DEMO_MODE = true; // Set to false for production
+        
+        const DEMO_DATA = {
+          submissionId: 'SSS-DEMO-TEST01',
+          timestamp: new Date().toISOString(),
+          formData: {
+            contactName: 'Test User',
+            email: 'test@example.com',
+            phone: '0821234567',
+            businessName: 'Demo Business (Pty) Ltd',
+            industry: 'Technology',
+            website: 'https://example.com'
+          },
+          metadata: {
+            source: 'demo_mode',
+            userAgent: navigator.userAgent
+          }
+        };
 
-        /**
-         * Initialize the subscribe page
-         */
-        function init() {
-          // Try to read submission data from localStorage
-          const storedData = localStorage.getItem(STORAGE_KEY);
-          
-          const submissionIdDisplay = document.getElementById('submissionIdDisplay');
-          const payfastForm = document.getElementById('payfastForm');
-          const payfastSubmitBtn = document.getElementById('payfastSubmitBtn');
-
-          if (storedData) {
-            try {
-              const submission = JSON.parse(storedData);
-              const formData = submission.formData || {};
-              
-              // Display the submission ID
-              if (submission.submissionId) {
-                submissionIdDisplay.textContent = submission.submissionId;
-                
-                // Populate PayFast hidden fields
-                populatePayFastForm(submission.submissionId, formData, submission.timestamp);
-
-                console.log('Submission loaded:', submission.submissionId);
-                console.log('Business Name:', formData.businessName || 'N/A');
-              } else {
-                submissionIdDisplay.textContent = 'ID not found';
-                disableForm();
-              }
-            } catch (e) {
-              console.error('Failed to parse submission data:', e);
-              submissionIdDisplay.textContent = 'Error loading ID';
-              disableForm();
-            }
+        // ============================================
+        // UTILITY: Console logging with prefix
+        // ============================================
+        function log(message, data = null) {
+          const prefix = '[Subscribe Page]';
+          if (data) {
+            console.log(prefix, message, data);
           } else {
-            // No submission data found - redirect back to form
-            submissionIdDisplay.textContent = 'No submission found';
-            disableForm();
+            console.log(prefix, message);
+          }
+        }
+
+        function logError(message, error = null) {
+          const prefix = '[Subscribe Page ERROR]';
+          if (error) {
+            console.error(prefix, message, error);
+          } else {
+            console.error(prefix, message);
+          }
+        }
+
+        function logWarn(message, data = null) {
+          const prefix = '[Subscribe Page WARN]';
+          if (data) {
+            console.warn(prefix, message, data);
+          } else {
+            console.warn(prefix, message);
+          }
+        }
+
+        // ============================================
+        // MAIN INITIALIZATION
+        // ============================================
+        function init() {
+          log('Initializing subscribe page...');
+          log('Demo mode enabled:', ENABLE_DEMO_MODE);
+          
+          // Try to read submission data from localStorage
+          let storedData = null;
+          let usingDemoData = false;
+          
+          try {
+            const rawData = localStorage.getItem(STORAGE_KEY);
+            log('localStorage raw data:', rawData ? 'Found (' + rawData.length + ' chars)' : 'Not found');
             
-            // Show warning message
-            const submissionInfo = document.getElementById('submissionInfo');
-            if (submissionInfo) {
-              submissionInfo.style.borderColor = 'rgba(239, 68, 68, 0.5)';
-              submissionInfo.style.backgroundColor = 'rgba(239, 68, 68, 0.1)';
-              submissionInfo.innerHTML = `
-                <p style="color: #fca5a5; font-size: 0.95rem;">
-                  <strong>No submission found.</strong><br/>
-                  Please fill out the details form first.
-                </p>
-                <a href="./collect-details.html" class="gjs-t-button hero-primary-cta" style="margin-top: 1rem; display: inline-flex;">
-                  Go to Details Form
-                </a>
+            if (rawData) {
+              storedData = JSON.parse(rawData);
+              log('Parsed localStorage data successfully');
+              log('Submission ID:', storedData.submissionId);
+              log('Form data keys:', Object.keys(storedData.formData || {}));
+            }
+          } catch (e) {
+            logError('Failed to parse localStorage data:', e);
+          }
+          
+          // Check if we have valid data
+          const hasValidData = storedData && 
+                               storedData.submissionId && 
+                               storedData.formData;
+          
+          log('Has valid localStorage data:', hasValidData);
+          
+          // Use demo data if no valid data and demo mode is enabled
+          if (!hasValidData && ENABLE_DEMO_MODE) {
+            logWarn('No valid localStorage data found. Using DEMO data for testing.');
+            storedData = DEMO_DATA;
+            usingDemoData = true;
+          }
+          
+          // Now populate the page
+          if (storedData && storedData.submissionId) {
+            populatePage(storedData, usingDemoData);
+          } else {
+            showErrorState('No submission found. Please complete the details form first.');
+          }
+        }
+
+        // ============================================
+        // POPULATE PAGE WITH DATA
+        // ============================================
+        function populatePage(submission, isDemoMode) {
+          log('Populating page with data...', { isDemoMode });
+          
+          const formData = submission.formData || {};
+          
+          // Show demo banner if using demo data
+          if (isDemoMode) {
+            showDemoBanner();
+          }
+          
+          // Update status badge
+          updateStatusBadge(isDemoMode);
+          
+          // Display submission ID
+          displaySubmissionId(submission.submissionId);
+          
+          // Display customer info
+          displayCustomerInfo(formData);
+          
+          // Populate PayFast form hidden fields
+          populatePayFastForm(submission.submissionId, formData, submission.timestamp);
+          
+          log('Page population complete!');
+        }
+
+        // ============================================
+        // UI UPDATE FUNCTIONS
+        // ============================================
+        
+        /**
+         * Show demo mode banner
+         */
+        function showDemoBanner() {
+          const banner = document.getElementById('debugBanner');
+          if (banner) {
+            banner.classList.add('visible');
+            log('Demo banner shown');
+          }
+        }
+        
+        /**
+         * Update status badge based on mode
+         */
+        function updateStatusBadge(isDemoMode) {
+          const badge = document.getElementById('statusBadge');
+          const statusText = document.getElementById('statusText');
+          
+          if (badge && statusText) {
+            if (isDemoMode) {
+              badge.className = 'status-badge demo';
+              badge.innerHTML = `
+                <img src="https://api.iconify.design/lucide-flask-conical.svg?color=%23fbbf24" alt="" width="18" height="18"/>
+                <span>Demo mode - test data loaded</span>
+              `;
+            } else {
+              badge.className = 'status-badge success';
+              badge.innerHTML = `
+                <img src="https://api.iconify.design/lucide-check-circle.svg?color=%2322c55e" alt="" width="18" height="18"/>
+                <span>Details saved successfully</span>
               `;
             }
           }
         }
-
+        
         /**
-         * Populate PayFast form fields from localStorage data
-         * These fields are sent to the server-side redirect handler
+         * Display submission ID
+         */
+        function displaySubmissionId(submissionId) {
+          const el = document.getElementById('submissionIdDisplay');
+          if (el) {
+            el.textContent = submissionId || 'N/A';
+            log('Submission ID displayed:', submissionId);
+          } else {
+            logError('submissionIdDisplay element not found');
+          }
+        }
+        
+        /**
+         * Display customer information in summary box
+         */
+        function displayCustomerInfo(formData) {
+          // Name
+          const nameEl = document.getElementById('displayName');
+          if (nameEl) {
+            nameEl.textContent = formData.contactName || 'Not provided';
+            log('Display name:', formData.contactName);
+          }
+          
+          // Email
+          const emailEl = document.getElementById('displayEmail');
+          if (emailEl) {
+            emailEl.textContent = formData.email || 'Not provided';
+            log('Display email:', formData.email ? '***@***' : 'Not provided');
+          }
+          
+          // Phone
+          const phoneEl = document.getElementById('displayPhone');
+          if (phoneEl) {
+            phoneEl.textContent = formData.phone || 'Not provided';
+            log('Display phone:', formData.phone ? '***' : 'Not provided');
+          }
+          
+          // Business
+          const businessEl = document.getElementById('displayBusiness');
+          if (businessEl) {
+            businessEl.textContent = formData.businessName || 'Not provided';
+            log('Display business:', formData.businessName);
+          }
+        }
+        
+        /**
+         * Populate PayFast form hidden fields
+         * These are sent to the server-side redirect handler
          */
         function populatePayFastForm(submissionId, formData, timestamp) {
+          log('Populating PayFast form fields...');
+          
           // Submission tracking
           setValue('payfast_submissionId', submissionId);
           setValue('payfast_businessName', formData.businessName || '');
           setValue('payfast_timestamp', timestamp || new Date().toISOString());
           
-          // Customer details - split contact name into first/last
+          // Split contact name into first/last for PayFast
           const contactName = formData.contactName || '';
           const nameParts = contactName.trim().split(/\s+/);
           const firstName = nameParts[0] || '';
@@ -250,51 +874,125 @@
           setValue('payfast_email', formData.email || '');
           setValue('payfast_phone', formData.phone || '');
           
-          console.log('PayFast form populated with customer details');
+          log('PayFast form fields populated:', {
+            submissionId,
+            firstName,
+            lastName,
+            email: formData.email ? '***' : 'empty',
+            businessName: formData.businessName
+          });
         }
-
+        
         /**
-         * Set value of a form field by ID
+         * Set a form field value by ID
          */
         function setValue(id, value) {
           const el = document.getElementById(id);
           if (el) {
             el.value = value;
+          } else {
+            logWarn('Form field not found:', id);
           }
         }
 
-        /**
-         * Disable the form when no valid submission exists
-         */
-        function disableForm() {
-          const payfastSubmitBtn = document.getElementById('payfastSubmitBtn');
-          const payfastForm = document.getElementById('payfastForm');
+        // ============================================
+        // ERROR STATE
+        // ============================================
+        function showErrorState(message) {
+          logError(message);
           
-          if (payfastSubmitBtn) {
-            payfastSubmitBtn.disabled = true;
-            payfastSubmitBtn.style.opacity = '0.5';
-            payfastSubmitBtn.style.cursor = 'not-allowed';
-            payfastSubmitBtn.innerHTML = `
-              <img src="https://api.iconify.design/lucide-alert-circle.svg?color=%23ffffff" alt="Error" width="18" height="18" style="margin-right: 0.5rem;"/>
-              Complete Details Form First
+          // Update status badge to error
+          const badge = document.getElementById('statusBadge');
+          if (badge) {
+            badge.className = 'status-badge error';
+            badge.innerHTML = `
+              <img src="https://api.iconify.design/lucide-alert-circle.svg?color=%23ef4444" alt="" width="18" height="18"/>
+              <span>Submission required</span>
             `;
           }
           
-          if (payfastForm) {
-            payfastForm.addEventListener('submit', function(e) {
+          // Update submission ID box
+          const idBox = document.getElementById('submissionIdBox');
+          if (idBox) {
+            idBox.style.borderColor = 'rgba(239, 68, 68, 0.3)';
+            idBox.style.background = 'rgba(239, 68, 68, 0.08)';
+          }
+          
+          const idDisplay = document.getElementById('submissionIdDisplay');
+          if (idDisplay) {
+            idDisplay.textContent = 'Not found';
+            idDisplay.style.color = '#ef4444';
+          }
+          
+          // Hide customer info box
+          const customerBox = document.getElementById('customerInfoBox');
+          if (customerBox) {
+            customerBox.style.display = 'none';
+          }
+          
+          // Disable submit button
+          const submitBtn = document.getElementById('payfastSubmitBtn');
+          if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `
+              <img src="https://api.iconify.design/lucide-alert-circle.svg?color=%23ffffff" alt="" width="20" height="20"/>
+              <span>Complete Details Form First</span>
+            `;
+          }
+          
+          // Intercept form submission
+          const form = document.getElementById('payfastForm');
+          if (form) {
+            form.addEventListener('submit', function(e) {
               e.preventDefault();
-              alert('Please complete the details form before subscribing.');
               window.location.href = './collect-details.html';
             });
           }
+          
+          // Update security callout to show error
+          const callout = document.querySelector('.security-callout');
+          if (callout) {
+            callout.style.borderColor = 'rgba(239, 68, 68, 0.3)';
+            callout.style.background = 'rgba(239, 68, 68, 0.08)';
+            callout.innerHTML = `
+              <img src="https://api.iconify.design/lucide-alert-triangle.svg?color=%23ef4444" alt="" width="24" height="24" class="security-callout-icon"/>
+              <div>
+                <h4 style="color: #ef4444;">Submission Required</h4>
+                <p>${message}</p>
+                <a href="./collect-details.html" style="display: inline-block; margin-top: 1rem; padding: 0.75rem 1.5rem; background: #0a84ff; color: white; border-radius: 0.5rem; text-decoration: none; font-weight: 500;">
+                  Go to Details Form →
+                </a>
+              </div>
+            `;
+          }
         }
 
-        // Initialize when DOM is ready
+        // ============================================
+        // INITIALIZE ON DOM READY
+        // ============================================
         if (document.readyState === 'loading') {
           document.addEventListener('DOMContentLoaded', init);
         } else {
           init();
         }
+        
+        // Also expose for console debugging
+        window.subscribePageDebug = {
+          STORAGE_KEY,
+          DEMO_DATA,
+          reinit: init,
+          clearStorage: function() {
+            localStorage.removeItem(STORAGE_KEY);
+            log('localStorage cleared. Refresh page to see demo mode.');
+          },
+          setDemoData: function() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(DEMO_DATA));
+            log('Demo data set in localStorage. Refresh page.');
+          }
+        };
+        
+        log('Debug helpers available at window.subscribePageDebug');
+        
       })();
     </script>
   </body>
