@@ -67,11 +67,12 @@
 #         Unused mode credentials can remain unset.
 #
 # -----------------------------------------------------
-# Airtable Database:
+# Local SQLite Database (via tunnel):
 # -----------------------------------------------------
-#   AIRTABLE_API_KEY       - Airtable Personal Access Token (required)
-#   AIRTABLE_BASE_ID       - Airtable base ID (required)
-#   AIRTABLE_TABLE_NAME    - Airtable table name (required)
+#   SSS_DB_API_URL         - URL to local database server (required)
+#                            Example: https://your-tunnel.ngrok.io
+#   SSS_DB_SECRET          - Shared secret for API authentication (required)
+#                            Must be at least 32 characters
 #
 # -----------------------------------------------------
 # Email Notifications:

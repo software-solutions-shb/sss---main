@@ -11,7 +11,7 @@
  * @module netlify/functions/payfast-redirect
  */
 
-const { getPayFastConfig, logConfigStatus } = require('./utils/payfast-config');
+const { getPayFastConfig } = require('./utils/payfast-config');
 
 // ============================================
 // ENVIRONMENT VARIABLES (set in Netlify dashboard)

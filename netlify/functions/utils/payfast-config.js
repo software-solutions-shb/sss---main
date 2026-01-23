@@ -264,22 +264,6 @@ function getPayFastHostname() {
 }
 
 /**
- * Get current PayFast mode (safe for logging)
- * @returns {string} "SANDBOX" or "LIVE"
- */
-function getPayFastModeLabel() {
-  const mode = getPayFastModeValue();
-  const modeValidation = validateMode(mode);
-  
-  if (!modeValidation.valid) {
-    throw new Error(modeValidation.error);
-  }
-
-  const isSandbox = isSandboxMode(modeValidation.normalized);
-  return isSandbox ? 'SANDBOX' : 'LIVE';
-}
-
-/**
  * Get all PayFast configuration for the current mode
  * Returns everything needed for payment processing
  * 
@@ -296,32 +280,14 @@ function getPayFastConfig() {
   };
 }
 
-// ============================================
-// SAFE LOGGING HELPERS
-// ============================================
-
-/**
- * Log PayFast configuration status without exposing secrets
- * @param {Object} config - PayFast configuration object
- */
-function logConfigStatus(config) {
-  console.log('PayFast Configuration:');
-  console.log('  Mode:', config.modeLabel);
-  console.log('  Merchant ID:', config.merchantId ? `${config.merchantId.substring(0, 4)}****` : 'NOT SET');
-  console.log('  Merchant Key:', config.merchantKey ? '****SET****' : 'NOT SET');
-  console.log('  Passphrase:', config.passphrase ? '****SET****' : '(empty)');
-  console.log('  Process URL: [dynamically constructed]');
-  console.log('  Validate URL: [dynamically constructed]');
-}
-
 module.exports = {
-  validateMode,
-  isSandboxMode,
-  getPayFastCredentials,
-  getPayFastProcessUrl,
-  getPayFastValidateUrl,
-  getPayFastHostname,
-  getPayFastModeLabel,
+  // Used by payfast-redirect.js
   getPayFastConfig,
-  logConfigStatus
+  
+  // Used by payfast-itn.js
+  getPayFastCredentials,
+  
+  // Used by payfast-validator.js
+  getPayFastValidateUrl,
+  getPayFastHostname
 };

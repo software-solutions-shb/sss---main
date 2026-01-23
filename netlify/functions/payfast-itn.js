@@ -6,19 +6,19 @@
  * 1. Validating the PayFast signature
  * 2. Confirming payment status is COMPLETE
  * 3. Extracting the submission ID from custom fields
- * 4. Appending subscriber data to Airtable
+ * 4. Saving subscriber data to local SQLite database (via API)
  * 5. Sending email notification to business owner
  * 6. Sending welcome email to client
  * 
- * Configuration is derived dynamically from PAYFAST_MODE environment variable.
+ * Configuration is derived dynamically from environment variables.
  * 
  * @module netlify/functions/payfast-itn
  */
 
 const { validatePayFastSignature, validatePayFastRequest } = require('./utils/payfast-validator');
-const { appendToAirtable } = require('./utils/airtable');
+const { appendToDatabase } = require('./utils/database-client');
 const { sendNotificationEmail, sendWelcomeEmail } = require('./utils/email-sender');
-const { getPayFastCredentials, getPayFastModeLabel, logConfigStatus } = require('./utils/payfast-config');
+const { getPayFastCredentials } = require('./utils/payfast-config');
 
 // ============================================
 // ENVIRONMENT VARIABLES (set in Netlify dashboard)
@@ -35,8 +35,11 @@ const { getPayFastCredentials, getPayFastModeLabel, logConfigStatus } = require(
 //   PAYFAST_LIVE_MERCHANT_KEY
 //   PAYFAST_LIVE_PASSPHRASE
 // 
-// Other required variables:
-//   AIRTABLE_API_KEY, AIRTABLE_BASE_ID, AIRTABLE_TABLE_NAME
+// Database:
+//   SSS_DB_API_URL - URL to local SQLite API server (e.g., https://your-tunnel.ngrok.io)
+//   SSS_DB_SECRET  - Shared secret for API authentication
+// 
+// Email:
 //   EMAIL_API_KEY, EMAIL_SERVICE, NOTIFICATION_EMAIL, FROM_EMAIL
 //   WHATSAPP_NUMBER - Business WhatsApp number for client welcome email (optional)
 
@@ -161,14 +164,27 @@ exports.handler = async function(event, context) {
     console.log('Subscriber Data:', JSON.stringify(subscriberData, null, 2));
 
     // ----------------------------------------
-    // Step 7: Append to Airtable
+    // Step 7: Save to Database
     // ----------------------------------------
+    // Uses local SQLite database via HTTP API
+    // The database-client module handles retries and queuing
+    // CRITICAL: Database failures should NOT fail the ITN response
+    let databaseSaveSuccess = false;
     try {
-      await appendToAirtable(subscriberData);
-      console.log('✓ Data appended to Airtable');
-    } catch (airtableError) {
-      console.error('ERROR: Failed to append to Airtable:', airtableError.message);
-      // Continue processing - don't fail the whole request
+      const dbResult = await appendToDatabase(subscriberData);
+      databaseSaveSuccess = true;
+      
+      if (dbResult.queued) {
+        console.log('⚠ Data queued for later retry (API offline):', dbResult.queueId);
+      } else {
+        console.log('✓ Data saved to database');
+      }
+    } catch (dbError) {
+      // Log error but continue - the payment is valid regardless of database state
+      console.error('ERROR: Failed to save to database:', dbError.message);
+      console.error('NOTE: Payment is still valid. Data may need manual recovery.');
+      // Log the payload for manual recovery if needed (safely, no PII in logs)
+      console.log('Submission ID for recovery:', submissionId);
     }
 
     // ----------------------------------------
@@ -176,12 +192,15 @@ exports.handler = async function(event, context) {
     // ----------------------------------------
     // Sends notification to NOTIFICATION_EMAIL env var
     // Uses EMAIL_API_KEY, EMAIL_SERVICE, FROM_EMAIL
+    // CRITICAL: Email failures should NOT fail the ITN response
+    let ownerEmailSent = false;
     try {
       await sendNotificationEmail(subscriberData);
+      ownerEmailSent = true;
       console.log('✓ Owner notification email sent');
     } catch (emailError) {
       console.error('ERROR: Failed to send owner notification email:', emailError.message);
-      // Continue processing - don't fail the whole request
+      // Continue processing - payment is still valid
     }
 
     // ----------------------------------------
@@ -190,9 +209,12 @@ exports.handler = async function(event, context) {
     // Sends welcome email to client's email address from form submission
     // Uses EMAIL_API_KEY, EMAIL_SERVICE, FROM_EMAIL, WHATSAPP_NUMBER (optional)
     // Client email is extracted from subscriberData.email (from PayFast ITN data)
+    // CRITICAL: Email failures should NOT fail the ITN response
+    let clientEmailSent = false;
     if (subscriberData.email) {
       try {
         await sendWelcomeEmail(subscriberData);
+        clientEmailSent = true;
         console.log('✓ Client welcome email sent to:', subscriberData.email.substring(0, 3) + '***');
       } catch (clientEmailError) {
         // Log error safely without exposing email address or secrets
@@ -207,7 +229,10 @@ exports.handler = async function(event, context) {
     // Step 10: Return success to PayFast
     // ----------------------------------------
     console.log('='.repeat(60));
-    console.log('ITN Processing Complete - Success');
+    console.log('ITN Processing Complete');
+    console.log('  Database saved:', databaseSaveSuccess ? 'YES' : 'NO (queued or failed)');
+    console.log('  Owner email:', ownerEmailSent ? 'SENT' : 'FAILED');
+    console.log('  Client email:', clientEmailSent ? 'SENT' : (subscriberData.email ? 'FAILED' : 'SKIPPED'));
     console.log('='.repeat(60));
 
     return {
