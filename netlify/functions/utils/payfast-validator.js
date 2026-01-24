@@ -19,42 +19,47 @@ const { getPayFastValidateUrl, getPayFastHostname } = require('./payfast-config'
  * PayFast signs all ITN requests with an MD5 hash of the data.
  * This function regenerates the signature and compares it.
  * 
- * @param {Object} data - The ITN data object from PayFast
+ * IMPORTANT: For ITN validation, fields must be processed in the order
+ * they were received, stopping before the signature field.
+ * See: https://developers.payfast.co.za/docs#verify-the-signature
+ * 
+ * @param {Object} data - The ITN data object from PayFast (preserves insertion order)
  * @param {string} passphrase - The merchant passphrase (if set in PayFast dashboard)
  * @returns {boolean} True if signature is valid
  */
 function validatePayFastSignature(data, passphrase = '') {
-  // Step 1: Create a copy and remove the signature field
-  const dataForSigning = { ...data };
-  delete dataForSigning.signature;
+  // Step 1: Build parameter string in the order fields were received
+  // Stop when we reach the signature field (it should be last)
+  const paramParts = [];
+  
+  for (const [key, value] of Object.entries(data)) {
+    // Stop at signature field
+    if (key === 'signature') {
+      break;
+    }
+    // Skip empty values
+    if (value === '' || value === null || value === undefined) {
+      continue;
+    }
+    // URL encode the value, replace %20 with + (PayFast requirement)
+    const encodedValue = encodeURIComponent(String(value)).replace(/%20/g, '+');
+    paramParts.push(`${key}=${encodedValue}`);
+  }
+  
+  const paramString = paramParts.join('&');
 
-  // Step 2: Sort the keys alphabetically
-  const sortedKeys = Object.keys(dataForSigning).sort();
-
-  // Step 3: Build the parameter string
-  // PayFast requires URL encoding of values
-  const paramString = sortedKeys
-    .filter(key => dataForSigning[key] !== '') // Exclude empty values
-    .map(key => {
-      const value = dataForSigning[key];
-      // URL encode the value, then replace %20 with + (PayFast requirement)
-      const encodedValue = encodeURIComponent(value).replace(/%20/g, '+');
-      return `${key}=${encodedValue}`;
-    })
-    .join('&');
-
-  // Step 4: Add passphrase if provided
+  // Step 2: Add passphrase if provided
   const stringToHash = passphrase 
     ? `${paramString}&passphrase=${encodeURIComponent(passphrase).replace(/%20/g, '+')}`
     : paramString;
 
-  // Step 5: Generate MD5 hash
+  // Step 3: Generate MD5 hash
   const calculatedSignature = crypto
     .createHash('md5')
     .update(stringToHash)
     .digest('hex');
 
-  // Step 6: Compare with received signature (case-insensitive)
+  // Step 4: Compare with received signature (case-insensitive)
   const receivedSignature = (data.signature || '').toLowerCase();
   const isValid = calculatedSignature.toLowerCase() === receivedSignature;
 
@@ -170,35 +175,64 @@ function confirmWithPayFast(data) {
 /**
  * Verify the source IP is from PayFast
  * 
- * PayFast ITN requests should come from specific IP addresses.
- * This is an additional security check.
+ * PayFast ITN requests should come from specific IP ranges.
+ * Updated IP ranges from PayFast documentation (2024):
+ * - 197.97.145.144/28 (197.97.145.144 - 197.97.145.159)
+ * - 41.74.179.192/27 (41.74.179.192 - 41.74.179.223)
+ * - 102.216.36.0/28 (102.216.36.0 - 102.216.36.15)
+ * - 102.216.36.128/28 (102.216.36.128 - 102.216.36.143)
+ * - 144.126.193.139
  * 
  * @param {string} sourceIp - The IP address of the request
  * @returns {boolean} True if IP is from PayFast
  */
 function verifyPayFastIP(sourceIp) {
-  // PayFast IP addresses (check PayFast documentation for current list)
-  const payfastIPs = [
-    '197.97.145.144',
-    '197.97.145.145',
-    '197.97.145.146',
-    '197.97.145.147',
-    '41.74.179.194',
-    '41.74.179.195',
-    '41.74.179.196',
-    '41.74.179.197',
-    // Sandbox IPs (for testing)
-    '197.97.145.148',
-    '197.97.145.149'
+  // Convert IP to number for range checking
+  function ipToNumber(ip) {
+    const parts = ip.split('.');
+    if (parts.length !== 4) return null;
+    return parts.reduce((acc, octet) => (acc << 8) + parseInt(octet, 10), 0) >>> 0;
+  }
+
+  // Check if IP is in a CIDR range
+  function isInRange(ip, cidr) {
+    const [rangeIp, bits] = cidr.split('/');
+    const ipNum = ipToNumber(ip);
+    const rangeNum = ipToNumber(rangeIp);
+    if (ipNum === null || rangeNum === null) return false;
+    const mask = ~((1 << (32 - parseInt(bits, 10))) - 1) >>> 0;
+    return (ipNum & mask) === (rangeNum & mask);
+  }
+
+  // PayFast IP ranges from documentation
+  const payfastRanges = [
+    '197.97.145.144/28',   // 197.97.145.144 - 197.97.145.159
+    '41.74.179.192/27',    // 41.74.179.192 - 41.74.179.223
+    '102.216.36.0/28',     // 102.216.36.0 - 102.216.36.15
+    '102.216.36.128/28'    // 102.216.36.128 - 102.216.36.143
+  ];
+
+  // Single IPs
+  const payfastSingleIPs = [
+    '144.126.193.139'
   ];
 
   // Also allow localhost for testing
   const testIPs = ['127.0.0.1', '::1', 'localhost'];
 
-  const isPayFast = payfastIPs.includes(sourceIp);
-  const isTest = testIPs.includes(sourceIp);
+  // Check single IPs first
+  if (payfastSingleIPs.includes(sourceIp) || testIPs.includes(sourceIp)) {
+    return true;
+  }
 
-  return isPayFast || isTest;
+  // Check CIDR ranges
+  for (const range of payfastRanges) {
+    if (isInRange(sourceIp, range)) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 module.exports = {

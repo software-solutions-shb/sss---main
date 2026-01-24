@@ -19,6 +19,7 @@ const { validatePayFastSignature, validatePayFastRequest } = require('./utils/pa
 const { appendToDatabase } = require('./utils/database-client');
 const { sendNotificationEmail, sendWelcomeEmail } = require('./utils/email-sender');
 const { getPayFastCredentials } = require('./utils/payfast-config');
+const { logInfo, logSuccess, logWarning, logError } = require('./utils/remote-logger');
 
 // ============================================
 // ENVIRONMENT VARIABLES (set in Netlify dashboard)
@@ -51,9 +52,8 @@ const { getPayFastCredentials } = require('./utils/payfast-config');
  * @returns {Object} HTTP response object
  */
 exports.handler = async function(event, context) {
-  console.log('='.repeat(60));
-  console.log('PayFast ITN Received:', new Date().toISOString());
-  console.log('='.repeat(60));
+  // Log to remote server for real-time monitoring
+  await logInfo('ITN', '═══ PayFast ITN Received ═══', { timestamp: new Date().toISOString() });
 
   // ----------------------------------------
   // Step 1: Only accept POST requests
@@ -100,6 +100,7 @@ exports.handler = async function(event, context) {
     }
 
     console.log('Parsed ITN Data:', JSON.stringify(sanitizeLogData(itnData), null, 2));
+    await logInfo('ITN', 'ITN data parsed', sanitizeLogData(itnData));
 
     // ----------------------------------------
     // Step 3: Validate PayFast signature
@@ -108,35 +109,63 @@ exports.handler = async function(event, context) {
 
     if (!isValidSignature) {
       console.log('ERROR: Invalid PayFast signature');
+      await logError('ITN', 'Invalid PayFast signature');
       return {
         statusCode: 400,
         body: JSON.stringify({ error: 'Invalid signature' })
       };
     }
     console.log('✓ PayFast signature validated');
+    await logSuccess('ITN', 'Signature validated');
 
     // ----------------------------------------
-    // Step 4: Validate the PayFast request
+    // Step 4: Validate expected payment amount
+    // ----------------------------------------
+    // For our subscription, initial amount should be R0.00 (first month free)
+    // or R499.99 for recurring payments
+    const amountGross = parseFloat(itnData.amount_gross || '0');
+    const expectedInitialAmount = 0.00;
+    const expectedRecurringAmount = 499.99;
+    
+    // Allow small tolerance for floating point comparison
+    const isInitialPayment = Math.abs(amountGross - expectedInitialAmount) < 0.01;
+    const isRecurringPayment = Math.abs(amountGross - expectedRecurringAmount) < 0.01;
+    
+    if (!isInitialPayment && !isRecurringPayment) {
+      console.log('WARNING: Unexpected payment amount:', amountGross);
+      console.log('  Expected initial: R' + expectedInitialAmount.toFixed(2));
+      console.log('  Expected recurring: R' + expectedRecurringAmount.toFixed(2));
+      // Don't reject - could be a price change or edge case
+      // But log for investigation
+    } else {
+      console.log('✓ Payment amount validated:', isInitialPayment ? 'Initial (R0.00)' : 'Recurring (R499.99)');
+    }
+
+    // ----------------------------------------
+    // Step 5: Validate the PayFast request (server confirmation)
     // ----------------------------------------
     const validationResult = await validatePayFastRequest(itnData, payfastConfig.merchantId);
 
     if (!validationResult.valid) {
       console.log('ERROR: PayFast validation failed:', validationResult.error);
+      await logError('ITN', 'PayFast server validation failed', { error: validationResult.error });
       return {
         statusCode: 400,
         body: JSON.stringify({ error: validationResult.error })
       };
     }
     console.log('✓ PayFast request validated');
+    await logSuccess('ITN', 'Server validation passed');
 
     // ----------------------------------------
-    // Step 5: Check payment status
+    // Step 6: Check payment status
     // ----------------------------------------
     const paymentStatus = itnData.payment_status;
     console.log('Payment Status:', paymentStatus);
 
     if (paymentStatus !== 'COMPLETE') {
       console.log('INFO: Payment not complete, status:', paymentStatus);
+      await logWarning('ITN', 'Payment not complete', { status: paymentStatus });
       // Still return 200 to acknowledge receipt
       // PayFast may send multiple notifications for different statuses
       return {
@@ -149,9 +178,10 @@ exports.handler = async function(event, context) {
       };
     }
     console.log('✓ Payment status is COMPLETE');
+    await logSuccess('ITN', 'Payment COMPLETE', { submission_id: itnData.custom_str1 });
 
     // ----------------------------------------
-    // Step 6: Extract submission ID and data
+    // Step 7: Extract submission ID and data
     // ----------------------------------------
     const submissionId = itnData.custom_str1 || '';
     const subscriberData = extractSubscriberData(itnData);
@@ -164,47 +194,54 @@ exports.handler = async function(event, context) {
     console.log('Subscriber Data:', JSON.stringify(subscriberData, null, 2));
 
     // ----------------------------------------
-    // Step 7: Save to Database
+    // Step 8: Save to Database
     // ----------------------------------------
     // Uses local SQLite database via HTTP API
     // The database-client module handles retries and queuing
     // CRITICAL: Database failures should NOT fail the ITN response
     let databaseSaveSuccess = false;
     try {
+      await logInfo('ITN', 'Saving to database...', { submission_id: submissionId });
       const dbResult = await appendToDatabase(subscriberData);
       databaseSaveSuccess = true;
       
       if (dbResult.queued) {
         console.log('⚠ Data queued for later retry (API offline):', dbResult.queueId);
+        await logWarning('ITN', 'Data queued (API offline)', { queueId: dbResult.queueId });
       } else {
         console.log('✓ Data saved to database');
+        await logSuccess('ITN', 'Data saved to database', { submission_id: submissionId });
       }
     } catch (dbError) {
       // Log error but continue - the payment is valid regardless of database state
       console.error('ERROR: Failed to save to database:', dbError.message);
       console.error('NOTE: Payment is still valid. Data may need manual recovery.');
+      await logError('ITN', 'Database save failed', { error: dbError.message, submission_id: submissionId });
       // Log the payload for manual recovery if needed (safely, no PII in logs)
       console.log('Submission ID for recovery:', submissionId);
     }
 
     // ----------------------------------------
-    // Step 8: Send email notification to OWNER
+    // Step 9: Send email notification to OWNER
     // ----------------------------------------
     // Sends notification to NOTIFICATION_EMAIL env var
     // Uses EMAIL_API_KEY, EMAIL_SERVICE, FROM_EMAIL
     // CRITICAL: Email failures should NOT fail the ITN response
     let ownerEmailSent = false;
     try {
+      await logInfo('ITN', 'Sending owner notification email...');
       await sendNotificationEmail(subscriberData);
       ownerEmailSent = true;
       console.log('✓ Owner notification email sent');
+      await logSuccess('ITN', 'Owner email sent');
     } catch (emailError) {
       console.error('ERROR: Failed to send owner notification email:', emailError.message);
+      await logError('ITN', 'Owner email failed', { error: emailError.message });
       // Continue processing - payment is still valid
     }
 
     // ----------------------------------------
-    // Step 9: Send welcome email to CLIENT
+    // Step 10: Send welcome email to CLIENT
     // ----------------------------------------
     // Sends welcome email to client's email address from form submission
     // Uses EMAIL_API_KEY, EMAIL_SERVICE, FROM_EMAIL, WHATSAPP_NUMBER (optional)
@@ -213,20 +250,24 @@ exports.handler = async function(event, context) {
     let clientEmailSent = false;
     if (subscriberData.email) {
       try {
+        await logInfo('ITN', 'Sending client welcome email...');
         await sendWelcomeEmail(subscriberData);
         clientEmailSent = true;
         console.log('✓ Client welcome email sent to:', subscriberData.email.substring(0, 3) + '***');
+        await logSuccess('ITN', 'Client welcome email sent');
       } catch (clientEmailError) {
         // Log error safely without exposing email address or secrets
         console.error('ERROR: Failed to send client welcome email:', clientEmailError.message);
+        await logError('ITN', 'Client email failed', { error: clientEmailError.message });
         // Continue processing - don't fail the whole ITN request because of email errors
       }
     } else {
       console.log('WARNING: No client email available, skipping welcome email');
+      await logWarning('ITN', 'No client email - skipping welcome email');
     }
 
     // ----------------------------------------
-    // Step 10: Return success to PayFast
+    // Step 11: Return success to PayFast
     // ----------------------------------------
     console.log('='.repeat(60));
     console.log('ITN Processing Complete');
@@ -234,6 +275,13 @@ exports.handler = async function(event, context) {
     console.log('  Owner email:', ownerEmailSent ? 'SENT' : 'FAILED');
     console.log('  Client email:', clientEmailSent ? 'SENT' : (subscriberData.email ? 'FAILED' : 'SKIPPED'));
     console.log('='.repeat(60));
+    
+    await logSuccess('ITN', '═══ ITN Processing Complete ═══', {
+      submission_id: submissionId,
+      database: databaseSaveSuccess ? 'saved' : 'failed',
+      owner_email: ownerEmailSent ? 'sent' : 'failed',
+      client_email: clientEmailSent ? 'sent' : (subscriberData.email ? 'failed' : 'skipped')
+    });
 
     return {
       statusCode: 200,

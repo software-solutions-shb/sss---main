@@ -11,6 +11,7 @@
  * @module netlify/functions/payfast-redirect
  */
 
+const crypto = require('crypto');
 const { getPayFastConfig } = require('./utils/payfast-config');
 
 // ============================================
@@ -115,47 +116,59 @@ exports.handler = async function(event, context) {
     // ----------------------------------------
     // Step 4: Build PayFast form fields
     // ----------------------------------------
+    // IMPORTANT: Field order matters for signature generation!
+    // PayFast requires fields in a specific order (not alphabetical)
+    // See: https://developers.payfast.co.za/docs#step-2-create-security-signature
     const notificationEmail = process.env.NOTIFICATION_EMAIL || '';
     
+    // Build fields in PayFast's required order for signature
     const formFields = {
-      // Merchant credentials (from secure config)
+      // 1. Merchant details (required first)
       merchant_id: payfastConfig.merchantId,
       merchant_key: payfastConfig.merchantKey,
+      return_url: siteUrl + '/thank-you-page.html',
+      cancel_url: siteUrl + '/subscribe.html',
+      notify_url: siteUrl + '/.netlify/functions/payfast-itn',
       
-      // Transaction details
-      amount: '0.00',
-      item_name: 'Landing Page Subscription - First Month Free',
-      item_description: 'Professional landing page design and hosting subscription',
-      
-      // Subscription details
-      subscription_type: '1',
-      recurring_amount: '499.99',
-      frequency: '3',  // Monthly
-      cycles: '0',     // Indefinite
-      
-      // Customer details
+      // 2. Customer details
       name_first: requestData.firstName || '',
       name_last: requestData.lastName || '',
       email_address: requestData.email || '',
       cell_number: (requestData.phone || '').replace(/[\s\-\(\)]/g, ''),
       
-      // Custom fields for tracking
+      // 3. Transaction details
+      m_payment_id: requestData.submissionId || '',
+      amount: '0.00',
+      item_name: 'Landing Page Subscription - First Month Free',
+      item_description: 'Professional landing page design and hosting subscription',
+      
+      // 4. Custom fields for tracking
       custom_str1: requestData.submissionId || '',
       custom_str2: requestData.businessName || '',
       custom_str3: requestData.timestamp || new Date().toISOString(),
       
-      // URLs
-      return_url: siteUrl + '/thank-you-page.html',
-      cancel_url: siteUrl + '/subscribe.html',
-      notify_url: siteUrl + '/.netlify/functions/payfast-itn',
-      
-      // Email confirmation
+      // 5. Transaction options
       email_confirmation: '1',
-      confirmation_address: notificationEmail
+      confirmation_address: notificationEmail,
+      
+      // 6. Subscription details (Recurring Billing)
+      subscription_type: '1',
+      recurring_amount: '499.99',
+      frequency: '3',  // Monthly
+      cycles: '0'      // Indefinite (0 = until cancelled)
     };
 
     // ----------------------------------------
-    // Step 5: Generate auto-submitting HTML form
+    // Step 5: Generate PayFast security signature
+    // ----------------------------------------
+    // Required for all transactions, especially subscriptions
+    const signature = generatePayFastSignature(formFields, payfastConfig.passphrase);
+    formFields.signature = signature;
+    
+    console.log('✓ PayFast signature generated');
+
+    // ----------------------------------------
+    // Step 6: Generate auto-submitting HTML form
     // ----------------------------------------
     const formHtml = generateAutoSubmitForm(payfastConfig.processUrl, formFields);
 
@@ -324,4 +337,40 @@ function escapeHtml(str) {
     "'": '&#39;'
   };
   return str.replace(/[&<>"']/g, char => htmlEscapes[char]);
+}
+
+/**
+ * Generate PayFast security signature
+ * 
+ * Creates an MD5 hash of the form fields for PayFast validation.
+ * IMPORTANT: Fields must be in the order they appear in the form,
+ * NOT alphabetically sorted (that's only for ITN validation).
+ * 
+ * See: https://developers.payfast.co.za/docs#step-2-create-security-signature
+ * 
+ * @param {Object} data - Form fields in order
+ * @param {string} passphrase - Merchant passphrase (required for subscriptions)
+ * @returns {string} MD5 signature hash
+ */
+function generatePayFastSignature(data, passphrase) {
+  // Build parameter string from fields in order (excluding empty values)
+  const paramString = Object.entries(data)
+    .filter(([key, value]) => value !== '' && value !== null && value !== undefined)
+    .map(([key, value]) => {
+      // URL encode the value
+      // PayFast requires spaces as '+' not '%20'
+      const encoded = encodeURIComponent(String(value).trim()).replace(/%20/g, '+');
+      return `${key}=${encoded}`;
+    })
+    .join('&');
+
+  // Add passphrase if provided (required for subscriptions)
+  const stringToHash = passphrase 
+    ? `${paramString}&passphrase=${encodeURIComponent(passphrase.trim()).replace(/%20/g, '+')}`
+    : paramString;
+
+  // Generate MD5 hash
+  const signature = crypto.createHash('md5').update(stringToHash).digest('hex');
+  
+  return signature;
 }
