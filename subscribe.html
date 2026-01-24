@@ -10,6 +10,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""/>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=DM+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
     <link rel="stylesheet" href="./style.css"/>
+    <!-- Google reCAPTCHA v3 (invisible) -->
+    <script src="https://www.google.com/recaptcha/api.js?render=6Let8lQsAAAAAKdI_oGL3i-8QRKVDtN-SA8AKPSX"></script>
     
     <!-- ========================================
          SUBSCRIBE PAGE STYLES
@@ -498,6 +500,9 @@
               <input type="hidden" name="phone" id="payfast_phone" value=""/>
               <input type="hidden" name="timestamp" id="payfast_timestamp" value=""/>
               
+              <!-- reCAPTCHA v3 token (populated on submit) -->
+              <input type="hidden" name="recaptchaToken" id="payfast_recaptchaToken" value=""/>
+              
               <!-- Item details (passed to PayFast via redirect) -->
               <input type="hidden" name="itemName" value="Landing Page Subscription - First Month Free"/>
               <input type="hidden" name="itemDescription" value="Professional landing page design and hosting subscription"/>
@@ -583,7 +588,7 @@
     <!-- ========================================
          FOOTER
     ======================================== -->
-    <section id="brand-new-footer" aria-label="Brand New Footer" class="brand-footer-section"><div class="brand-footer-container"><div class="brand-footer-left"><div class="brand-name">Software Solutions Services</div><p class="brand-tagline">High-converting landing pages, fully managed—fast to launch, built to perform.</p></div><div class="brand-footer-center"><a href="./privacy-policy.html" aria-label="Privacy Policy" class="footer-link">Privacy Policy</a><a href="./terms-of-service.html" aria-label="Terms of Service" class="footer-link">Terms of Service</a></div><div class="brand-footer-right"><span class="copyright">© 2023 Software Solutions Services. All rights reserved.</span></div></div></section>
+    <section id="brand-new-footer" aria-label="Brand New Footer" class="brand-footer-section"><div class="brand-footer-container"><div class="brand-footer-left"><div class="brand-name">Software Solutions Services</div><p class="brand-tagline">High-converting landing pages, fully managed—fast to launch, built to perform.</p></div><div class="brand-footer-center"><a href="./privacy-policy.html" aria-label="Privacy Policy" class="footer-link">Privacy Policy</a><a href="./terms-of-service.html" aria-label="Terms of Service" class="footer-link">Terms of Service</a></div><div class="brand-footer-right"><span class="copyright">Est. 2023 • © 2026 Software Solutions Services. All rights reserved.</span></div></div></section>
 
     <!-- ========================================
          JAVASCRIPT
@@ -739,6 +744,10 @@
           
           const formData = submission.formData || {};
           
+          // CRITICAL: Store the FULL submission data for form submit
+          // This is what gets sent to payfast-redirect via JSON
+          setSubmissionData(submission);
+          
           // Show demo banner if using demo data
           if (isDemoMode) {
             showDemoBanner();
@@ -753,10 +762,139 @@
           // Display customer info
           displayCustomerInfo(formData);
           
-          // Populate PayFast form hidden fields
+          // Populate PayFast form hidden fields (for display/fallback only)
           populatePayFastForm(submission.submissionId, formData, submission.timestamp);
           
+          // Set up reCAPTCHA v3 form handler (must be after setSubmissionData)
+          setupRecaptchaFormHandler();
+          
           log('Page population complete!');
+        }
+
+        // ============================================
+        // RECAPTCHA V3 FORM HANDLER
+        // ============================================
+        
+        // Store the full submission data for sending to payfast-redirect
+        let currentSubmissionData = null;
+        
+        /**
+         * Store the full submission data so it can be sent with the form
+         * This is called from populatePage() before the form handler is set up
+         */
+        function setSubmissionData(submissionData) {
+          currentSubmissionData = submissionData;
+          log('Full submission data stored for form submit');
+        }
+        
+        /**
+         * Intercept PayFast form submission to:
+         * 1. Add reCAPTCHA v3 token
+         * 2. Send FULL form data as JSON (not just hidden fields)
+         * 
+         * CRITICAL: Uses fetch() to POST JSON, not form.submit()
+         * This ensures the COMPLETE formData object is sent to payfast-redirect
+         */
+        function setupRecaptchaFormHandler() {
+          const form = document.getElementById('payfastForm');
+          const submitBtn = document.getElementById('payfastSubmitBtn');
+          
+          if (!form) {
+            logError('PayFast form not found');
+            return;
+          }
+          
+          form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            log('Form submit intercepted...');
+            
+            // Verify we have the full submission data
+            if (!currentSubmissionData || !currentSubmissionData.submissionId) {
+              logError('No submission data available');
+              alert('Error: Submission data not found. Please go back and fill out the form again.');
+              return;
+            }
+            
+            // Disable button while processing
+            if (submitBtn) {
+              submitBtn.disabled = true;
+              submitBtn.innerHTML = `
+                <img src="https://api.iconify.design/lucide-loader.svg?color=%23ffffff" alt="" width="20" height="20" style="animation: spin 1s linear infinite;"/>
+                <span>Verifying...</span>
+              `;
+            }
+            
+            try {
+              // Get reCAPTCHA v3 token
+              let recaptchaToken = '';
+              if (typeof grecaptcha !== 'undefined') {
+                await new Promise((resolve) => grecaptcha.ready(resolve));
+                recaptchaToken = await grecaptcha.execute('6Let8lQsAAAAAKdI_oGL3i-8QRKVDtN-SA8AKPSX', { action: 'submit_payment' });
+                log('reCAPTCHA v3 token obtained');
+              } else {
+                logWarn('grecaptcha not loaded, proceeding without token');
+              }
+              
+              // Build the COMPLETE payload with ALL form data
+              // This ensures payfast-redirect receives everything needed for pending storage
+              const payload = {
+                submissionId: currentSubmissionData.submissionId,
+                formData: currentSubmissionData.formData,  // FULL form data object
+                timestamp: currentSubmissionData.submittedAt || new Date().toISOString(),
+                metadata: currentSubmissionData.metadata || {},
+                recaptchaToken: recaptchaToken
+              };
+              
+              log('Sending FULL form data to payfast-redirect...');
+              log('Submission ID:', payload.submissionId);
+              log('Form data keys:', Object.keys(payload.formData || {}));
+              
+              // POST as JSON to ensure full data is received
+              const response = await fetch('/.netlify/functions/payfast-redirect', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+              });
+              
+              if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Server error: ${response.status} - ${errorText}`);
+              }
+              
+              // The response is HTML with an auto-submitting PayFast form
+              // Replace the page content with it to trigger redirect
+              const html = await response.text();
+              log('Received PayFast redirect form, redirecting...');
+              
+              // Replace entire document with the PayFast form HTML
+              document.open();
+              document.write(html);
+              document.close();
+              
+            } catch (error) {
+              logError('Form submission error:', error);
+              
+              // Show user-friendly error
+              alert('Payment processing error. Please try again or contact support.');
+              
+              // Re-enable button on error
+              if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = `
+                  <img src="https://api.iconify.design/lucide-lock.svg?color=%23ffffff" alt="" width="20" height="20"/>
+                  <span>
+                    Proceed to Payment
+                    <span class="subscribe-button-subtext">Pay R0.00 today — First month free!</span>
+                  </span>
+                `;
+              }
+            }
+          });
+          
+          log('reCAPTCHA v3 form handler set up (using fetch for full data)');
         }
 
         // ============================================

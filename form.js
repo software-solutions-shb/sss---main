@@ -5,7 +5,8 @@
  * ============================================
  * 
  * This script handles:
- * - Form validation
+ * - Real-time form validation with disabled submit button
+ * - reCAPTCHA v3 integration (invisible, score-based)
  * - Data collection from all form fields
  * - Generation of unique submission ID
  * - Saving data to localStorage
@@ -23,9 +24,41 @@
   
   const CONFIG = {
     formId: 'businessDetailsForm',
+    submitButtonId: 'submitButton',
     storageKey: 'sss_submission_data',
-    redirectUrl: './subscribe.html'
+    redirectUrl: './subscribe.html',
+    recaptchaSiteKey: '6Let8lQsAAAAAKdI_oGL3i-8QRKVDtN-SA8AKPSX'
   };
+
+  // ============================================
+  // RECAPTCHA v3 FUNCTIONS
+  // ============================================
+
+  /**
+   * Get reCAPTCHA v3 token for form submission
+   * v3 is invisible - no user interaction required
+   * @returns {Promise<string>} The reCAPTCHA token
+   */
+  function getRecaptchaToken() {
+    return new Promise((resolve, reject) => {
+      if (typeof grecaptcha === 'undefined') {
+        console.warn('[reCAPTCHA] grecaptcha not loaded, skipping');
+        resolve('');
+        return;
+      }
+      
+      grecaptcha.ready(function() {
+        grecaptcha.execute(CONFIG.recaptchaSiteKey, { action: 'submit_form' })
+          .then(function(token) {
+            resolve(token);
+          })
+          .catch(function(error) {
+            console.error('[reCAPTCHA] Failed to get token:', error);
+            resolve(''); // Don't block form submission
+          });
+      });
+    });
+  }
 
   // ============================================
   // UTILITY FUNCTIONS
@@ -140,7 +173,74 @@
   }
 
   /**
-   * Validate required fields
+   * Check if all required fields are filled (for enabling submit button)
+   * @param {HTMLFormElement} form - The form element
+   * @returns {boolean} True if all required fields are filled
+   */
+  function areAllRequiredFieldsFilled(form) {
+    const requiredFields = form.querySelectorAll('[required]');
+    
+    for (let i = 0; i < requiredFields.length; i++) {
+      const field = requiredFields[i];
+      
+      switch (field.type) {
+        case 'checkbox':
+          // For required checkboxes (like terms), must be checked
+          if (!field.checked) {
+            return false;
+          }
+          break;
+        case 'radio':
+          // Check if any radio in the group is selected
+          const radioGroup = form.querySelectorAll(`input[name="${field.name}"]`);
+          const anySelected = Array.from(radioGroup).some(radio => radio.checked);
+          if (!anySelected) {
+            return false;
+          }
+          break;
+        default:
+          // Text, email, tel, textarea, select, etc.
+          if (!field.value || field.value.trim() === '') {
+            return false;
+          }
+          break;
+      }
+    }
+
+    // Check if at least one main goal is selected
+    const mainGoals = form.querySelectorAll('input[name="mainGoals"]:checked');
+    if (mainGoals.length === 0) {
+      return false;
+    }
+
+    return true;
+  }
+
+  /**
+   * Update the submit button state based on form validity
+   * Note: reCAPTCHA v3 is invisible, so no checkbox to check
+   */
+  function updateSubmitButtonState() {
+    const form = document.getElementById(CONFIG.formId);
+    const submitButton = document.getElementById(CONFIG.submitButtonId);
+    
+    if (!form || !submitButton) return;
+
+    const allFieldsFilled = areAllRequiredFieldsFilled(form);
+    // v3 reCAPTCHA has no checkbox - enable submit when fields are filled
+    const isValid = allFieldsFilled;
+
+    if (isValid) {
+      submitButton.disabled = false;
+      submitButton.classList.remove('button-disabled');
+    } else {
+      submitButton.disabled = true;
+      submitButton.classList.add('button-disabled');
+    }
+  }
+
+  /**
+   * Validate required fields (double-check on submit)
    * @param {HTMLFormElement} form - The form element
    * @returns {Object} Validation result with isValid flag and errors array
    */
@@ -186,6 +286,9 @@
       });
     }
 
+    // Note: reCAPTCHA v3 is invisible and token is obtained on submit
+    // No pre-validation checkbox check needed
+
     return {
       isValid: errors.length === 0,
       errors: errors
@@ -206,7 +309,7 @@
   }
 
   /**
-   * Display validation errors to the user
+   * Display validation errors to the user (fallback if button somehow clicked)
    * @param {Array} errors - Array of error objects
    */
   function displayErrors(errors) {
@@ -283,10 +386,17 @@
    */
   function initForm() {
     const form = document.getElementById(CONFIG.formId);
+    const submitButton = document.getElementById(CONFIG.submitButtonId);
     
     if (!form) {
       console.error('Form not found:', CONFIG.formId);
       return;
+    }
+
+    // Ensure button is disabled initially
+    if (submitButton) {
+      submitButton.disabled = true;
+      submitButton.classList.add('button-disabled');
     }
 
     // Handle custom CTA toggle
@@ -303,24 +413,64 @@
       });
     });
 
+    // Add real-time validation - update button state on any input change
+    const allInputs = form.querySelectorAll('input, select, textarea');
+    allInputs.forEach(input => {
+      // Listen to multiple events to catch all changes
+      ['input', 'change', 'blur'].forEach(eventType => {
+        input.addEventListener(eventType, function() {
+          updateSubmitButtonState();
+        });
+      });
+    });
+
     // Form submission handler
-    form.addEventListener('submit', function(event) {
+    form.addEventListener('submit', async function(event) {
       // Prevent default form submission
       event.preventDefault();
 
-      // Validate the form
+      // Double-check: If button is disabled, don't submit
+      if (submitButton && submitButton.disabled) {
+        console.warn('Form submitted while button was disabled - blocked');
+        return;
+      }
+
+      // Validate the form (double-check)
       const validation = validateForm(form);
 
       if (!validation.isValid) {
         displayErrors(validation.errors);
+        // Re-disable button as a safety measure
+        if (submitButton) {
+          submitButton.disabled = true;
+          submitButton.classList.add('button-disabled');
+        }
         return;
       }
 
       // Clear any previous errors
       displayErrors([]);
 
+      // Disable submit button while processing
+      if (submitButton) {
+        submitButton.disabled = true;
+        submitButton.textContent = 'Processing...';
+      }
+
       // Collect all form data
       const formData = collectFormData(form);
+
+      // Get reCAPTCHA v3 token (invisible, runs in background)
+      try {
+        const recaptchaToken = await getRecaptchaToken();
+        if (recaptchaToken) {
+          formData.recaptchaToken = recaptchaToken;
+          console.log('[reCAPTCHA v3] Token obtained');
+        }
+      } catch (recaptchaError) {
+        console.warn('[reCAPTCHA v3] Failed to get token:', recaptchaError);
+        // Continue anyway - server will handle missing token
+      }
 
       // Generate submission ID and timestamp
       const submissionId = generateSubmissionId();
@@ -353,28 +503,19 @@
           field: 'general',
           message: 'Failed to save your submission. Please try again or contact support.'
         }]);
+        
+        // Re-enable submit button
+        if (submitButton) {
+          submitButton.disabled = false;
+          submitButton.textContent = 'Submit Details and Subscribe';
+        }
       }
     });
 
-    // Add real-time validation feedback
-    const inputs = form.querySelectorAll('input, select, textarea');
-    inputs.forEach(input => {
-      input.addEventListener('blur', function() {
-        if (this.required && !this.value.trim()) {
-          this.classList.add('field-error');
-        } else {
-          this.classList.remove('field-error');
-        }
-      });
+    // Initial button state check
+    updateSubmitButtonState();
 
-      input.addEventListener('input', function() {
-        if (this.classList.contains('field-error') && this.value.trim()) {
-          this.classList.remove('field-error');
-        }
-      });
-    });
-
-    console.log('Form handler initialized');
+    console.log('Form handler initialized with real-time validation');
   }
 
   // ============================================

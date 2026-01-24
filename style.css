@@ -54,9 +54,21 @@
   transform: translateY(-1px);
 }
 
-.primary-submit-button:disabled {
-  opacity: 0.6;
+.primary-submit-button:disabled,
+.primary-submit-button.button-disabled {
+  opacity: 0.5;
   cursor: not-allowed;
+  transform: none;
+  background-color: #4a4a4a;
+  color: #888888;
+  box-shadow: none;
+  pointer-events: none;
+}
+
+.primary-submit-button:disabled:hover,
+.primary-submit-button.button-disabled:hover {
+  background-color: #4a4a4a;
+  box-shadow: none;
   transform: none;
 }
 

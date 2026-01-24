@@ -1,0 +1,15 @@
+{
+  "name": "software-solutions-services",
+  "version": "1.0.0",
+  "description": "Subscription landing page for Software Solutions Services with PayFast payments",
+  "private": true,
+  "scripts": {
+    "dev": "netlify dev"
+  },
+  "dependencies": {
+    "pg": "^8.11.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

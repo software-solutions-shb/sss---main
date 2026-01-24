@@ -8,6 +8,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&amp;display=swap" rel="stylesheet"/>
     <link rel="stylesheet" href="./style.css">
+    <!-- Google reCAPTCHA v3 (invisible) -->
+    <script src="https://www.google.com/recaptcha/api.js?render=6Let8lQsAAAAAKdI_oGL3i-8QRKVDtN-SA8AKPSX"></script>
   </head>
   <body class="gjs-t-body body-wrapper">
     
@@ -58,7 +60,7 @@
               <div class="gjs-t-border form-intro-card">
                 <div class="form-intro-content">
                   <img src="https://api.iconify.design/lucide-info.svg?color=%23ffffff" alt="Info" width="20" height="20"/>
-                  <p class="form-intro-text">Fields marked with <span class="required-asterisk">*</span> are required. All other fields are optional but help us create a better landing page for you.</p>
+                  <p class="form-intro-text">Fields marked with <span class="required-asterisk">*</span> are required. The submit button will activate once all required fields are completed and the security verification is done.</p>
                 </div>
               </div>
             </div>
@@ -294,33 +296,33 @@
                 <!-- WhatsApp Number -->
                 <div class="field-group" style="grid-column: span 6;">
                   <label for="whatsappNumber" class="field-label">
-                    WhatsApp Number
+                    WhatsApp Number<span class="required-asterisk">*</span>
                   </label>
-                  <input type="tel" id="whatsappNumber" name="whatsappNumber" class="tel-input" placeholder="e.g. 082 123 4567"/>
+                  <input type="tel" id="whatsappNumber" name="whatsappNumber" class="tel-input" placeholder="e.g. 082 123 4567" required/>
                 </div>
 
                 <!-- Street Address -->
                 <div class="field-group" style="grid-column: span 6;">
                   <label for="streetAddress" class="field-label">
-                    Street Address
+                    Street Address<span class="required-asterisk">*</span>
                   </label>
-                  <input type="text" id="streetAddress" name="streetAddress" class="text-input" placeholder="e.g. 123 Main Street"/>
+                  <input type="text" id="streetAddress" name="streetAddress" class="text-input" placeholder="e.g. 123 Main Street" required/>
                 </div>
 
                 <!-- City -->
                 <div class="field-group" style="grid-column: span 4;">
                   <label for="city" class="field-label">
-                    City
+                    City<span class="required-asterisk">*</span>
                   </label>
-                  <input type="text" id="city" name="city" class="text-input" placeholder="e.g. Johannesburg"/>
+                  <input type="text" id="city" name="city" class="text-input" placeholder="e.g. Johannesburg" required/>
                 </div>
 
                 <!-- Province -->
                 <div class="field-group" style="grid-column: span 4;">
                   <label for="province" class="field-label">
-                    Province
+                    Province<span class="required-asterisk">*</span>
                   </label>
-                  <select id="province" name="province" class="select-input">
+                  <select id="province" name="province" class="select-input" required>
                     <option value="">Select Province</option>
                     <option value="Eastern Cape">Eastern Cape</option>
                     <option value="Free State">Free State</option>
@@ -337,9 +339,9 @@
                 <!-- Postal Code -->
                 <div class="field-group" style="grid-column: span 4;">
                   <label for="postalCode" class="field-label">
-                    Postal Code
+                    Postal Code<span class="required-asterisk">*</span>
                   </label>
-                  <input type="text" id="postalCode" name="postalCode" class="text-input" placeholder="e.g. 2000"/>
+                  <input type="text" id="postalCode" name="postalCode" class="text-input" placeholder="e.g. 2000" required/>
                 </div>
               </div>
             </fieldset>
@@ -355,36 +357,36 @@
               
               <div class="section-grid">
                 <div class="field-group" style="grid-column: span 6;">
-                  <label for="hoursMonday" class="field-label">Monday</label>
-                  <input type="text" id="hoursMonday" name="hoursMonday" class="text-input" placeholder="e.g. 08:00 - 17:00 or Closed"/>
+                  <label for="hoursMonday" class="field-label">Monday<span class="required-asterisk">*</span></label>
+                  <input type="text" id="hoursMonday" name="hoursMonday" class="text-input" placeholder="e.g. 08:00 - 17:00 or Closed" required/>
                 </div>
                 <div class="field-group" style="grid-column: span 6;">
-                  <label for="hoursTuesday" class="field-label">Tuesday</label>
-                  <input type="text" id="hoursTuesday" name="hoursTuesday" class="text-input" placeholder="e.g. 08:00 - 17:00"/>
+                  <label for="hoursTuesday" class="field-label">Tuesday<span class="required-asterisk">*</span></label>
+                  <input type="text" id="hoursTuesday" name="hoursTuesday" class="text-input" placeholder="e.g. 08:00 - 17:00" required/>
                 </div>
                 <div class="field-group" style="grid-column: span 6;">
-                  <label for="hoursWednesday" class="field-label">Wednesday</label>
-                  <input type="text" id="hoursWednesday" name="hoursWednesday" class="text-input" placeholder="e.g. 08:00 - 17:00"/>
+                  <label for="hoursWednesday" class="field-label">Wednesday<span class="required-asterisk">*</span></label>
+                  <input type="text" id="hoursWednesday" name="hoursWednesday" class="text-input" placeholder="e.g. 08:00 - 17:00" required/>
                 </div>
                 <div class="field-group" style="grid-column: span 6;">
-                  <label for="hoursThursday" class="field-label">Thursday</label>
-                  <input type="text" id="hoursThursday" name="hoursThursday" class="text-input" placeholder="e.g. 08:00 - 17:00"/>
+                  <label for="hoursThursday" class="field-label">Thursday<span class="required-asterisk">*</span></label>
+                  <input type="text" id="hoursThursday" name="hoursThursday" class="text-input" placeholder="e.g. 08:00 - 17:00" required/>
                 </div>
                 <div class="field-group" style="grid-column: span 6;">
-                  <label for="hoursFriday" class="field-label">Friday</label>
-                  <input type="text" id="hoursFriday" name="hoursFriday" class="text-input" placeholder="e.g. 08:00 - 17:00"/>
+                  <label for="hoursFriday" class="field-label">Friday<span class="required-asterisk">*</span></label>
+                  <input type="text" id="hoursFriday" name="hoursFriday" class="text-input" placeholder="e.g. 08:00 - 17:00" required/>
                 </div>
                 <div class="field-group" style="grid-column: span 6;">
-                  <label for="hoursSaturday" class="field-label">Saturday</label>
-                  <input type="text" id="hoursSaturday" name="hoursSaturday" class="text-input" placeholder="e.g. 09:00 - 13:00"/>
+                  <label for="hoursSaturday" class="field-label">Saturday<span class="required-asterisk">*</span></label>
+                  <input type="text" id="hoursSaturday" name="hoursSaturday" class="text-input" placeholder="e.g. 09:00 - 13:00" required/>
                 </div>
                 <div class="field-group" style="grid-column: span 6;">
-                  <label for="hoursSunday" class="field-label">Sunday</label>
-                  <input type="text" id="hoursSunday" name="hoursSunday" class="text-input" placeholder="e.g. Closed"/>
+                  <label for="hoursSunday" class="field-label">Sunday<span class="required-asterisk">*</span></label>
+                  <input type="text" id="hoursSunday" name="hoursSunday" class="text-input" placeholder="e.g. Closed" required/>
                 </div>
                 <div class="field-group" style="grid-column: span 6;">
-                  <label for="hoursPublicHoliday" class="field-label">Public Holidays</label>
-                  <input type="text" id="hoursPublicHoliday" name="hoursPublicHoliday" class="text-input" placeholder="e.g. Closed or By Appointment"/>
+                  <label for="hoursPublicHoliday" class="field-label">Public Holidays<span class="required-asterisk">*</span></label>
+                  <input type="text" id="hoursPublicHoliday" name="hoursPublicHoliday" class="text-input" placeholder="e.g. Closed or By Appointment" required/>
                 </div>
               </div>
             </fieldset>
@@ -402,9 +404,9 @@
                 <!-- Color Scheme -->
                 <div class="field-group" style="grid-column: span 6;">
                   <label for="colorScheme" class="field-label">
-                    Preferred Colour Scheme
+                    Preferred Colour Scheme<span class="required-asterisk">*</span>
                   </label>
-                  <select id="colorScheme" name="colorScheme" class="select-input">
+                  <select id="colorScheme" name="colorScheme" class="select-input" required>
                     <option value="automatic">Automatic best colour scheme</option>
                     <option value="blue">Blue (Professional, Trustworthy)</option>
                     <option value="green">Green (Nature, Health, Growth)</option>
@@ -522,16 +524,7 @@
                   <textarea id="additionalNotes" name="additionalNotes" class="textarea" rows="4" placeholder="Any other information you'd like us to know? Special requests, specific features, inspiration websites, etc."></textarea>
                 </div>
 
-                <!-- CAPTCHA Placeholder -->
-                <div class="field-group" style="grid-column: span 12;">
-                  <div class="gjs-t-border" style="padding: 1rem; border-radius: 0.5rem; background-color: rgba(255,255,255,0.05);">
-                    <p style="color: rgba(255,255,255,0.7); font-size: 0.875rem;">
-                      <img src="https://api.iconify.design/lucide-shield-check.svg?color=%23ffffff" alt="Security" width="16" height="16" style="display: inline; vertical-align: middle; margin-right: 0.5rem;"/>
-                      <!-- CAPTCHA placeholder - will be implemented with backend integration -->
-                      Your submission is protected and secure.
-                    </p>
-                  </div>
-                </div>
+                <!-- reCAPTCHA v3 runs invisibly in background - no UI needed -->
 
                 <!-- Legal Agreement -->
                 <div class="field-group" style="grid-column: span 12;">
@@ -553,7 +546,7 @@
                 <img src="https://api.iconify.design/lucide-arrow-left.svg?color=%23ffffff" alt="Back" width="16" height="16"/>
                 <span>Back to Home</span>
               </a>
-              <button type="submit" class="gjs-t-button hero-primary-cta primary-submit-button">
+              <button type="submit" id="submitButton" class="gjs-t-button hero-primary-cta primary-submit-button" disabled>
                 Submit Details and Subscribe
                 <img src="https://api.iconify.design/lucide-arrow-right.svg?color=%23ffffff" alt="Submit" width="16" height="16" style="margin-left: 0.5rem;"/>
               </button>
@@ -590,7 +583,7 @@
           <a href="./terms-of-service.html" aria-label="Terms of Service" class="footer-link">Terms of Service</a>
         </div>
         <div class="brand-footer-right">
-          <span class="copyright">© 2023 Software Solutions Services. All rights reserved.</span>
+          <span class="copyright">Est. 2023 • © 2026 Software Solutions Services. All rights reserved.</span>
         </div>
       </div>
     </section>
