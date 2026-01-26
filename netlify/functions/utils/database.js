@@ -34,11 +34,13 @@ let pool = null;
  */
 function getPool() {
   if (!pool) {
-    const connectionString = process.env.DATABASE_URL;
+    // Netlify Neon integration uses NETLIFY_DATABASE_URL
+    // Fall back to DATABASE_URL for local development
+    const connectionString = process.env.NETLIFY_DATABASE_URL || process.env.DATABASE_URL;
     
     if (!connectionString) {
       throw new Error(
-        'DATABASE_URL environment variable is required. ' +
+        'NETLIFY_DATABASE_URL or DATABASE_URL environment variable is required. ' +
         'Enable Netlify DB integration in your Netlify site settings.'
       );
     }
