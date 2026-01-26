@@ -861,6 +861,7 @@
               
               if (!response.ok) {
                 const errorText = await response.text();
+                console.error('Server response:', response.status, errorText);
                 throw new Error(`Server error: ${response.status} - ${errorText}`);
               }
               
