@@ -4,8 +4,9 @@
  * This endpoint allows you to manually test the ITN processing
  * by providing a submission ID that exists in pending_form_data.
  * 
- * Usage: POST to /.netlify/functions/test-itn
- * Body: { "submissionId": "SSS-20260126-XXXXX" }
+ * Usage: 
+ *   GET  - List all pending and submissions records
+ *   POST - Process a specific submission ID
  * 
  * DELETE THIS FILE after testing is complete!
  */
@@ -19,10 +20,66 @@ const {
 } = require('./utils/database');
 const { sendFullFormNotificationEmail, sendWelcomeEmail } = require('./utils/email-sender');
 
+// Get database pool for direct queries
+const { Pool } = require('pg');
+
+function getPool() {
+  const connectionString = process.env.NETLIFY_DATABASE_URL || process.env.DATABASE_URL;
+  if (!connectionString) {
+    throw new Error('No database connection string found');
+  }
+  return new Pool({
+    connectionString,
+    ssl: { rejectUnauthorized: true },
+    max: 1
+  });
+}
+
 exports.handler = async function(event, context) {
   console.log('═══════════════════════════════════════════════════════════════');
   console.log('TEST ITN Endpoint:', new Date().toISOString());
   console.log('═══════════════════════════════════════════════════════════════');
+
+  // GET request - list all records
+  if (event.httpMethod === 'GET') {
+    try {
+      const pool = getPool();
+      
+      // Get pending records
+      const pendingResult = await pool.query(
+        'SELECT submission_id, created_at, expires_at FROM pending_form_data ORDER BY created_at DESC LIMIT 10'
+      );
+      
+      // Get submission records
+      const submissionsResult = await pool.query(
+        'SELECT submission_id, created_at, payment_status FROM submissions ORDER BY created_at DESC LIMIT 10'
+      );
+      
+      await pool.end();
+      
+      return {
+        statusCode: 200,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: 'Database Status',
+          pending_form_data: {
+            count: pendingResult.rows.length,
+            records: pendingResult.rows
+          },
+          submissions: {
+            count: submissionsResult.rows.length,
+            records: submissionsResult.rows
+          }
+        }, null, 2)
+      };
+    } catch (error) {
+      return {
+        statusCode: 500,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ error: error.message })
+      };
+    }
+  }
 
   // Only accept POST
   if (event.httpMethod !== 'POST') {
