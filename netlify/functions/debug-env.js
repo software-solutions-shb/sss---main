@@ -9,12 +9,13 @@ exports.handler = async function(event, context) {
   // Only show partial values for security
   const maskValue = (val) => {
     if (!val) return 'NOT SET ❌';
-    if (val.length < 10) return 'SET ✓ (short value)';
+    if (val.length < 10) return `SET ✓ (${val})`;
     return `SET ✓ (${val.substring(0, 4)}...${val.substring(val.length - 4)})`;
   };
 
   const envStatus = {
-    // Database
+    // Database - Check BOTH variable names
+    NETLIFY_DATABASE_URL: maskValue(process.env.NETLIFY_DATABASE_URL),
     DATABASE_URL: maskValue(process.env.DATABASE_URL),
     
     // Site URL
@@ -26,13 +27,14 @@ exports.handler = async function(event, context) {
     PAYFAST_SANDBOX_MERCHANT_KEY: maskValue(process.env.PAYFAST_SANDBOX_MERCHANT_KEY),
     PAYFAST_SANDBOX_PASSPHRASE: maskValue(process.env.PAYFAST_SANDBOX_PASSPHRASE),
     
+    // Email (Resend) - CORRECT VARIABLES
+    EMAIL_API_KEY: maskValue(process.env.EMAIL_API_KEY),
+    EMAIL_SERVICE: process.env.EMAIL_SERVICE || 'NOT SET ❌',
+    NOTIFICATION_EMAIL: maskValue(process.env.NOTIFICATION_EMAIL),
+    FROM_EMAIL: maskValue(process.env.FROM_EMAIL),
+    
     // reCAPTCHA
     RECAPTCHA_SECRET_KEY: maskValue(process.env.RECAPTCHA_SECRET_KEY),
-    
-    // Email
-    EMAIL_HOST: maskValue(process.env.EMAIL_HOST),
-    EMAIL_USER: maskValue(process.env.EMAIL_USER),
-    EMAIL_PASS: maskValue(process.env.EMAIL_PASS),
     
     // Netlify provided
     URL: process.env.URL || 'NOT SET',
