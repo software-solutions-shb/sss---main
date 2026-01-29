@@ -138,21 +138,22 @@ exports.handler = async function(event, context) {
       };
     }
 
-    // Get pending form data
-    const pendingRecord = await getPendingFormData(submissionId);
+    // Get pending form data (ignore expiry for recovery testing)
+    const pendingRecord = await getPendingFormData(submissionId, true);
     
     if (!pendingRecord) {
       return {
         statusCode: 404,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          error: 'No pending form data found',
+          error: 'No pending form data found (even expired records)',
           submissionId: submissionId
         })
       };
     }
 
-    console.log('✓ Found pending record');
+    const isExpired = new Date(pendingRecord.expires_at) < new Date();
+    console.log('✓ Found pending record', isExpired ? '(EXPIRED - recovering)' : '');
 
     // Parse form data
     const fullFormData = typeof pendingRecord.form_data === 'string' 

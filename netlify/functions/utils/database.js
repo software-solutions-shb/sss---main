@@ -205,9 +205,10 @@ async function storePendingFormData(submissionId, formData) {
  * Retrieve pending form data by submission ID
  * 
  * @param {string} submissionId - The submission ID to find
- * @returns {Promise<Object|null>} The form data or null if not found/expired
+ * @param {boolean} ignoreExpiry - If true, return even expired records (for recovery)
+ * @returns {Promise<Object|null>} The form data or null if not found
  */
-async function getPendingFormData(submissionId) {
+async function getPendingFormData(submissionId, ignoreExpiry = false) {
   if (!submissionId) {
     return null;
   }
@@ -215,14 +216,15 @@ async function getPendingFormData(submissionId) {
   const client = await getPool().connect();
   
   try {
-    const result = await client.query(`
-      SELECT * FROM pending_form_data 
-      WHERE submission_id = $1 
-        AND expires_at > NOW()
-    `, [submissionId]);
+    // Build query - optionally ignore expiry for data recovery
+    const query = ignoreExpiry 
+      ? `SELECT * FROM pending_form_data WHERE submission_id = $1`
+      : `SELECT * FROM pending_form_data WHERE submission_id = $1 AND expires_at > NOW()`;
+    
+    const result = await client.query(query, [submissionId]);
     
     if (result.rows.length === 0) {
-      console.log('[Database] Pending form data not found or expired:', submissionId);
+      console.log('[Database] Pending form data not found:', submissionId, ignoreExpiry ? '(ignoring expiry)' : '');
       return null;
     }
     
